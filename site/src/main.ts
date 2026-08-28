@@ -1,5 +1,5 @@
 import "./style.css";
-import { acceptLicenseFromUrl, verifyLicense } from "../../shared/license";
+import { acceptLicenseFromUrl, LICENSE_KEY, verifyLicense } from "../../shared/license";
 
 type Download = { url: string; sha256: string };
 type Manifest = { version: string; platforms: Record<string, Download> };
@@ -34,11 +34,19 @@ async function resolveDownloads() {
 
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("/sw.js").catch(() => undefined);
 if (acceptLicenseFromUrl()) verifyLicense(true).then((state) => {
-  const message = state?.valid ? "Purchase complete. Paste your license into the desktop app to restore Lens Plus." : "Your license was saved. Open the desktop app to verify it.";
-  const banner = document.createElement("p");
+  const message = state?.valid ? "Purchase complete. Copy your license, then restore it in the desktop app." : "Your license was saved. Copy it into the desktop app to verify it.";
+  const banner = document.createElement("div");
   banner.className = "license-banner";
   banner.role = "status";
-  banner.textContent = message;
+  const copy = document.createElement("button");
+  copy.type = "button";
+  copy.textContent = "Copy license for desktop app";
+  copy.addEventListener("click", async () => {
+    const token = localStorage.getItem(LICENSE_KEY) || "";
+    await navigator.clipboard.writeText(token);
+    copy.textContent = "License copied";
+  });
+  banner.append(message, copy);
   document.body.prepend(banner);
 });
 void resolveDownloads();

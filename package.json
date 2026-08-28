@@ -10,7 +10,7 @@
     "build:app": "vite build --config vite.app.config.ts",
     "build:site": "vite build --config vite.site.config.ts",
     "build": "npm run build:app && npm run build:site",
-    "test": "tsc --noEmit && vitest run && cargo test --manifest-path src-tauri/Cargo.toml",
+    "test": "tsc --noEmit && vitest run shared && cargo test --manifest-path src-tauri/Cargo.toml",
     "test:web": "playwright test",
     "test:app-web": "playwright test --config playwright.app.config.ts"
   },

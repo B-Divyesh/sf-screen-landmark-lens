@@ -1,9 +1,9 @@
 import "./style.css";
 import { acceptLicenseFromUrl, LICENSE_KEY, verifyLicense } from "../../shared/license";
 
-type Download = { url: string; sha256: string };
-type Manifest = { version: string; platforms: Record<string, Download> };
-const manifestUrl = "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/latest/download/latest.json";
+type ReleaseAsset = { name: string; browser_download_url: string };
+type Release = { tag_name: string; assets: ReleaseAsset[] };
+const releaseApi = "https://api.github.com/repos/B-Divyesh/sf-screen-landmark-lens/releases/latest";
 
 function platformKey(): { key: string; label: string } {
   const platform = (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform || navigator.platform || navigator.userAgent;
@@ -21,12 +21,13 @@ async function resolveDownloads() {
   const buttons = [document.querySelector<HTMLAnchorElement>("#platform-download"), document.querySelector<HTMLAnchorElement>("#platform-download-2")];
   buttons.forEach((button) => { if (button) button.textContent = label; });
   try {
-    const response = await fetch(manifestUrl);
-    if (!response.ok) throw new Error("No release manifest");
-    const manifest = await response.json() as Manifest;
-    const download = manifest.platforms[key];
-    if (download?.url) buttons.forEach((button) => { if (button) button.href = download.url; });
-    document.querySelector("#release-note")!.textContent = `Version ${manifest.version} · Free core tools · signed checksum`;
+    const response = await fetch(releaseApi);
+    if (!response.ok) throw new Error("No release");
+    const release = await response.json() as Release;
+    const suffixes: Record<string, string> = { windows: "_windows.msi", "macos-arm64": "_macos-arm64.dmg", "macos-x64": "_macos-x64.dmg", linux: "_linux.AppImage" };
+    const download = release.assets.find((asset) => asset.name.endsWith(suffixes[key]));
+    if (download) buttons.forEach((button) => { if (button) button.href = download.browser_download_url; });
+    document.querySelector("#release-note")!.textContent = `Version ${release.tag_name.replace(/^v/, "")} · Free core tools · signed checksum`;
   } catch {
     document.querySelector("#release-note")!.textContent = "Latest release · macOS, Windows, Linux";
   }

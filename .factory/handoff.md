@@ -31,14 +31,16 @@ Local verification on Ubuntu 24.04:
 - `npm run build`: passed. Landing output is 3.36 KB JS / 9.44 KB CSS uncompressed (1.58 KB / 2.81 KB gzip). App output is 8.97 KB JS / 8.70 KB CSS uncompressed.
 - Original responsive hero variants are 16–68 KB, well below the 300 KB budget.
 - `npm run tauri build -- --bundles deb`: passed and produced a local `.deb` before the generated Cargo target was cleaned.
-- Lighthouse 12.8.2 mobile against the production build: Performance 100, Accessibility 100, Best Practices 96, SEO 92; LCP 1.1 s, CLS 0, TBT 0 ms. The two non-perfect checks were a missing release manifest before tagging (console) and the then-missing `robots.txt`; `robots.txt` is now present and the manifest is created by the release workflow.
+- Lighthouse 12.8.2 mobile against the final production build: Performance 100, Accessibility 100, Best Practices 100, SEO 100; LCP 1.1 s, CLS 0, TBT 0 ms, and no console errors.
 - `npm audit --omit=dev`: 0 vulnerabilities. No runtime CDN, analytics, third-party font, or tracking request exists.
 
 ## Release verification
 
 - Release tag: `v0.1.0`.
 - Workflow: `.github/workflows/release.yml`.
-- Release URL and final artifact/checksum status are recorded here after the tag workflow completes.
+- Release: https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/tag/v0.1.0
+- GitHub Actions run `33158629302` passed all four builds plus the manifest job. Published assets: macOS arm64/x64 `.dmg`, Windows `.msi`/`.exe`, Linux `.AppImage`/`.deb`/`.rpm`, `SHA256SUMS`, and `latest.json`.
+- Post-release verification downloaded `Screen-Landmark-Lens_0.1.0_linux.deb`; expected and actual SHA-256 both matched `c26f1378bd756ba207b3e5584f1411c3f858b885a914ba2256a3ca1153b84de6`. `latest.json` was fetched from `/releases/latest/download/latest.json` and validated for all four platform keys.
 
 ## Known limits
 
@@ -47,6 +49,7 @@ Local verification on Ubuntu 24.04:
 - Screen capture could not be exercised against a real GUI window in the headless factory container; the native capture code compiled and packaged, while model integrity and the downstream direction logic are directly tested. A pilot screen-reader user should still run the five scripted target tasks from the brief.
 - Speech uses the operating system Web Speech voice, so voice availability and pronunciation vary by host.
 - Wayland capture depends on the desktop portal/PipeWire implementation and may show a system picker in addition to the in-app selection.
+- GitHub's release-download host does not expose browser CORS headers, so the landing page resolves its platform button through GitHub's CORS-enabled Releases API. The checksum-verifying installers consume the required release-hosted `latest.json` directly.
 
 ## Needs operator action
 

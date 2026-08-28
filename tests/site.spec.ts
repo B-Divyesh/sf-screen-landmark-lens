@@ -4,9 +4,9 @@ import AxeBuilder from "@axe-core/playwright";
 test("landing page has a clear, working download path", async ({ page }) => {
   const errors: string[] = [];
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
-  await page.route("**/releases/latest/download/latest.json", (route) => route.fulfill({
+  await page.route("https://api.github.com/repos/**/releases/latest", (route) => route.fulfill({
     contentType: "application/json",
-    body: JSON.stringify({ version: "0.1.0", platforms: { linux: { url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.0/app.AppImage", sha256: "abc" } } })
+    body: JSON.stringify({ tag_name: "v0.1.0", assets: [{ name: "Screen-Landmark-Lens_0.1.0_linux.AppImage", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.0/app.AppImage" }] })
   }));
   await page.goto("/");
   await expect(page).toHaveTitle(/Screen Landmark Lens/);

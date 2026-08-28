@@ -43,39 +43,73 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - id: tauri
+        uses: tauri-apps/tauri-action@v0
         with:
-          tagName: ${{ env.RELEASE_TAG }}
-          releaseName: Screen Landmark Lens ${{ env.RELEASE_TAG }}
-          releaseBody: |
-            First public build of Screen Landmark Lens. All window captures and OCR stay on the device.
-
-            These binaries are unsigned. macOS users should right-click the app and choose Open; Windows may show SmartScreen.
-          releaseDraft: false
-          prerelease: false
           args: --target ${{ matrix.target }}
-          releaseAssetNamePattern: '[name]_[version]_${{ matrix.key }}[setup][ext]'
+      - name: Stage macOS bundles
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          mkdir staged
+          version="${RELEASE_TAG#v}"
+          dmg="$(find src-tauri/target/${{ matrix.target }}/release/bundle -type f -name '*.dmg' -print -quit)"
+          test -n "$dmg"
+          cp "$dmg" "staged/Screen-Landmark-Lens_${version}_${{ matrix.key }}.dmg"
+      - name: Stage Linux bundles
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          mkdir staged
+          version="${RELEASE_TAG#v}"
+          for extension in AppImage deb rpm; do
+            asset="$(find src-tauri/target/${{ matrix.target }}/release/bundle -type f -iname "*.${extension}" -print -quit)"
+            if test -n "$asset"; then cp "$asset" "staged/Screen-Landmark-Lens_${version}_linux.${extension}"; fi
+          done
+          test -f "staged/Screen-Landmark-Lens_${version}_linux.AppImage"
+          test -f "staged/Screen-Landmark-Lens_${version}_linux.deb"
+      - name: Stage Windows bundles
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path staged | Out-Null
+          $version = $env:RELEASE_TAG.TrimStart('v')
+          $bundleRoot = "src-tauri/target/${{ matrix.target }}/release/bundle"
+          $msi = Get-ChildItem -Path $bundleRoot -Recurse -Filter *.msi | Select-Object -First 1
+          $exe = Get-ChildItem -Path $bundleRoot -Recurse -Filter *-setup.exe | Select-Object -First 1
+          if (-not $msi -or -not $exe) { throw "Expected both MSI and NSIS installers" }
+          Copy-Item $msi.FullName "staged/Screen-Landmark-Lens_${version}_windows.msi"
+          Copy-Item $exe.FullName "staged/Screen-Landmark-Lens_${version}_windows-setup.exe"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.key }}
+          path: staged/*
+          if-no-files-found: error
 
   manifest:
     needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Download release assets
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          mkdir release-assets
-          gh release download "$RELEASE_TAG" --dir release-assets
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
       - name: Create checksum and download manifests
         run: node scripts/make-release-manifest.mjs release-assets
       - name: Verify release manifest
         run: |
           jq -e '.version and .platforms.windows.url and .platforms["macos-arm64"].url and .platforms["macos-x64"].url and .platforms.linux.url' release-assets/latest.json
           (cd release-assets && sha256sum --check SHA256SUMS)
-      - name: Publish manifests
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "$RELEASE_TAG" release-assets/SHA256SUMS release-assets/latest.json --clobber
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: Screen Landmark Lens ${{ env.RELEASE_TAG }}
+          draft: false
+          prerelease: false
+          body: |
+            First public build of Screen Landmark Lens. All window captures and OCR stay on the device.
+
+            These binaries are unsigned. macOS users should right-click the app and choose Open; Windows may show SmartScreen.
+          files: release-assets/*

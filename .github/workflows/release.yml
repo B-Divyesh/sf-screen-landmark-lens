@@ -1,0 +1,81 @@
+name: Release desktop app
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || 'v0.1.0' }}
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            target: aarch64-apple-darwin
+            key: macos-arm64
+          - platform: macos-latest
+            target: x86_64-apple-darwin
+            key: macos-x64
+          - platform: windows-latest
+            target: x86_64-pc-windows-msvc
+            key: windows
+          - platform: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            key: linux
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Linux build dependencies
+        if: matrix.platform == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libx11-dev libxcb1-dev libxrandr-dev libdbus-1-dev libpipewire-0.3-dev libwayland-dev libclang-dev clang libgbm-dev
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ env.RELEASE_TAG }}
+          releaseName: Screen Landmark Lens ${{ env.RELEASE_TAG }}
+          releaseBody: |
+            First public build of Screen Landmark Lens. All window captures and OCR stay on the device.
+
+            These binaries are unsigned. macOS users should right-click the app and choose Open; Windows may show SmartScreen.
+          releaseDraft: false
+          prerelease: false
+          args: --target ${{ matrix.target }}
+          assetNamePattern: '[name]_[version]_${{ matrix.key }}[setup][ext]'
+
+  manifest:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir release-assets
+          gh release download "$RELEASE_TAG" --dir release-assets
+      - name: Create checksum and download manifests
+        run: node scripts/make-release-manifest.mjs release-assets
+      - name: Verify release manifest
+        run: |
+          jq -e '.version and .platforms.windows.url and .platforms["macos-arm64"].url and .platforms["macos-x64"].url and .platforms.linux.url' release-assets/latest.json
+          (cd release-assets && sha256sum --check SHA256SUMS)
+      - name: Publish manifests
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "$RELEASE_TAG" release-assets/SHA256SUMS release-assets/latest.json --clobber

@@ -6,7 +6,7 @@ type Manifest = { version: string; platforms: Record<string, Download> };
 const manifestUrl = "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/latest/download/latest.json";
 
 function platformKey(): { key: string; label: string } {
-  const platform = navigator.userAgentData?.platform || navigator.platform || navigator.userAgent;
+  const platform = (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform || navigator.platform || navigator.userAgent;
   if (/win/i.test(platform)) return { key: "windows", label: "Download for Windows" };
   if (/mac/i.test(platform)) {
     const arm = /arm|aarch64/i.test(navigator.userAgent);

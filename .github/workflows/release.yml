@@ -56,7 +56,7 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: --target ${{ matrix.target }}
-          assetNamePattern: '[name]_[version]_${{ matrix.key }}[setup][ext]'
+          releaseAssetNamePattern: '[name]_[version]_${{ matrix.key }}[setup][ext]'
 
   manifest:
     needs: build

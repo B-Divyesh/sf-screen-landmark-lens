@@ -1,0 +1,34 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Screen Landmark Lens",
+  "version": "0.1.0",
+  "identifier": "in.sociobot.screen-landmark-lens",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "npm run build:app",
+    "frontendDist": "../dist/app"
+  },
+  "app": {
+    "windows": [{
+      "title": "Screen Landmark Lens",
+      "width": 1180,
+      "height": 820,
+      "minWidth": 360,
+      "minHeight": 640,
+      "resizable": true,
+      "fullscreen": false
+    }],
+    "security": { "csp": "default-src 'self'; connect-src 'self' https://api.sociobot.in; img-src 'self' asset:; style-src 'self'; script-src 'self'" }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "category": "Utility",
+    "shortDescription": "Find visible controls in inaccessible software",
+    "longDescription": "Capture one selected window, recognize visible labels locally, and hear directional cues without cloud image uploads.",
+    "resources": ["resources/text-detection.rten", "resources/text-recognition.rten"],
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+    "macOS": { "minimumSystemVersion": "10.15" }
+  }
+}

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#101827" />
+    <title>Screen Landmark Lens</title>
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <header class="app-header">
+      <a class="wordmark" href="https://screen-landmark-lens.sociobot.in" aria-label="Screen Landmark Lens home">
+        <span class="mark" aria-hidden="true"></span><span>Landmark Lens</span>
+      </a>
+      <p class="privacy-note"><span aria-hidden="true">●</span> Local processing</p>
+    </header>
+    <main id="main">
+      <section class="intro" aria-labelledby="app-title">
+        <p class="eyebrow">Window wayfinding</p>
+        <h1 id="app-title">Find the control<br />you can’t reach.</h1>
+        <p>Choose one visible window. Lens reads its labels locally and tells you where they are. It never clicks or sends a capture away.</p>
+      </section>
+
+      <section class="workspace" aria-label="Landmark finder">
+        <div class="station window-station">
+          <div class="station-heading">
+            <span class="station-number" aria-hidden="true">01</span>
+            <div><h2>Choose a window</h2><p>Only this window will be captured.</p></div>
+          </div>
+          <div class="field-row">
+            <label for="window-select">Visible window</label>
+            <select id="window-select"><option value="">Loading visible windows…</option></select>
+            <button class="icon-button" id="refresh-windows" type="button" aria-label="Refresh visible windows" title="Refresh visible windows">↻</button>
+          </div>
+          <button class="primary-button" id="scan-button" type="button" disabled>
+            <span>Capture and read</span><kbd>Enter</kbd>
+          </button>
+          <p class="permission-hint">Your system may ask for screen-recording permission the first time.</p>
+        </div>
+
+        <div class="station result-station" aria-labelledby="result-title">
+          <div class="station-heading">
+            <span class="station-number" aria-hidden="true">02</span>
+            <div><h2 id="result-title">Visible landmarks</h2><p id="scan-meta">Waiting for a selected window.</p></div>
+          </div>
+          <div id="result-empty" class="empty-state">
+            <div class="reticle" aria-hidden="true"><span></span></div>
+            <p>No capture yet</p>
+            <small>Choose a window, then capture and read.</small>
+          </div>
+          <ol id="landmark-list" class="landmark-list" hidden></ol>
+          <div class="result-actions">
+            <button id="read-all" type="button" class="secondary-button" disabled>Read visible labels <kbd>Alt Shift L</kbd></button>
+            <button id="describe-buttons" type="button" class="secondary-button" disabled>Describe likely buttons <kbd>Alt Shift B</kbd></button>
+          </div>
+        </div>
+
+        <div class="station find-station">
+          <div class="station-heading">
+            <span class="station-number" aria-hidden="true">03</span>
+            <div><h2>Find text</h2><p>Search the latest local capture.</p></div>
+          </div>
+          <form id="find-form">
+            <label for="find-input">Label to find</label>
+            <div class="search-row">
+              <input id="find-input" type="search" autocomplete="off" placeholder="For example, Save" disabled />
+              <button type="submit" class="signal-button" disabled>Find <kbd>Alt Shift F</kbd></button>
+            </div>
+          </form>
+          <div id="find-result" class="find-result" aria-live="polite">Results will include a direction such as “bottom right.”</div>
+        </div>
+      </section>
+
+      <section class="plus-panel" aria-labelledby="plus-title">
+        <div><p class="eyebrow">Optional one-time unlock</p><h2 id="plus-title">Lens Plus</h2><p>Keep favourite target phrases and tune the voice speed for repeated work. Every capture, label, search, and directional cue stays free.</p></div>
+        <div id="plus-locked">
+          <a class="primary-button link-button" id="buy-link" href="https://api.sociobot.in/api/v1/products/screen-landmark-lens/checkout">Buy once — $19</a>
+          <details><summary>Have a license? Restore it</summary><form id="license-form"><label for="license-input">License token</label><input id="license-input" required autocomplete="off" /><button class="secondary-button" type="submit">Verify license</button></form></details>
+        </div>
+        <div id="plus-unlocked" hidden>
+          <label for="speech-rate">Voice speed <output id="speech-rate-output">1×</output></label>
+          <input id="speech-rate" type="range" min="0.6" max="1.6" value="1" step="0.1" />
+          <button id="save-target" class="secondary-button" type="button">Save current target</button>
+          <ul id="saved-targets" aria-label="Saved target phrases"></ul>
+        </div>
+        <p id="license-status" class="status-copy" aria-live="polite"></p>
+      </section>
+    </main>
+    <footer><p>Output may be incomplete. Lens is a wayfinding aid, not medical or professional advice.</p><nav aria-label="Legal"><a href="https://screen-landmark-lens.sociobot.in/privacy">Privacy</a><a href="https://screen-landmark-lens.sociobot.in/terms">Terms</a></nav></footer>
+    <div id="announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  </body>
+</html>

@@ -73,7 +73,25 @@ Static output is 3.36 KB gzip JavaScript and 3.30 KB gzip CSS for the site shell
 
 ## Deployment and remaining operator work
 
-The repository is ready for the factory's static deployment: `npm run build:site` publishes `dist/site`. No infrastructure, DNS, billing engine, secrets, or non-product service was accessed. The repair removes the inaccessible paid checkout; restoring one-time licensing later requires the factory to register the product and then reintroduce only a tested Sociobot billing path.
+Static deployment completed on 2026-08-30 with
+`/opt/fleet/lib/deploy-static.sh screen-landmark-lens dist/site`. The wrapper
+reused only `sf-screen-landmark-lens` in `centralus`, uploaded deployment
+`5f3ba215-d9ea-4cbb-9809-69ae70b41c06`, and reported `Succeeded`. The custom
+domain is live at <https://screen-landmark-lens.sociobot.in>.
+
+Post-deploy checks passed: the live root loaded in 2,164 ms with zero console
+errors; it has the expected title, `lang=en`, one `h1`, `main`, and complete
+image alt text. Live `/`, `/demo/`, `/privacy/`, `/terms/`, and `/404.html`
+each returned HTTP 200. The live demo at 390×844 had zero serious or critical
+axe findings and zero console errors. Its headers include `X-Frame-Options:
+DENY`, `nosniff`, the configured restrictive CSP with `frame-ancestors 'none'`,
+and the AVIF asset now returns `Content-Type: image/avif` with immutable cache
+control.
+
+No infrastructure, billing engine, secrets, or non-product service was
+accessed. The repair removes the inaccessible paid checkout; restoring one-time
+licensing later requires the factory to register the product and then
+reintroduce only a tested Sociobot billing path.
 
 The repository's GitHub release workflow remains responsible for macOS, Windows, and Linux release assets. It intentionally produces unsigned binaries; signing/notarization still requires the owner-provided certificate secrets documented in the earlier release workflow.
 

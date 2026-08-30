@@ -4,17 +4,18 @@ Repair commits: `b6e1ac0`, `0490d2a`, and the static deployment repair commit.
 
 ## Static deployment repair (2026-08-30)
 
-The completed source work was preserved. The failed Static Web Apps attempt used
-the parent `dist/` directory even though the documented static artifact is
-`dist/site`. A clean `npm run build:site` produces `dist/site/index.html` and
-`dist/site/staticwebapp.config.json`; `dist/index.html` does not exist. The
-factory wrapper rejects that parent directory before upload, which reproduces
-the failure condition without changing any Azure resource.
+The completed source work was preserved. The factory wrapper reproduced the
+Static Web Apps validation error exactly: `/assets/*.avif` was covered by the
+earlier `/assets/*` wildcard route, so Azure rejected the deployment before
+upload. The specific AVIF route now appears first. A clean `npm run build:site`
+produces `dist/site/index.html` and `dist/site/staticwebapp.config.json`, the
+artifact root required by the deployment configuration.
 
 `shared/static-deploy.test.ts` now locks the published Static Web Apps contract:
-the copied configuration has the `dist/site` fallback exclusions and the valid
-404 response override (`rewrite` plus `statusCode`, rather than an invalid
-route rule). The static site must be deployed with:
+the copied configuration has the `dist/site` fallback exclusions, the valid 404
+response override (`rewrite` plus `statusCode`, rather than an invalid route
+rule), and the required specific-before-wildcard route order. The static site
+must be deployed with:
 
 ```sh
 /opt/fleet/lib/deploy-static.sh screen-landmark-lens dist/site
@@ -54,7 +55,7 @@ The static-deployment repair was additionally checked from a clean `npm ci`:
 
 ```sh
 npm run build:site                         # pass; publishes dist/site/index.html
-npm test                                   # pass; 5 Vitest checks plus Rust tests
+npm test                                   # pass; 6 Vitest checks plus Rust tests
 npm run build                              # pass; dist/app and dist/site
 npm run test:web                           # pass; claims, offline/update, privacy, desktop and 390×844 mobile
 npm run test:app-web                       # pass; desktop sample, keyboard-safe controls, and uncertainty states

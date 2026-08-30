@@ -57,7 +57,7 @@ test("@claim:site-updates navigations use a versioned, network-first worker", as
   expect(source.indexOf("fetch(event.request)")).toBeLessThan(source.indexOf("caches.match(event.request).then((cached) => cached || fetch"));
 });
 
-for (const path of ["/", "/privacy/", "/terms/"]) {
+for (const path of ["/", "/demo/", "/privacy/", "/terms/"]) {
   test(`${path} has no serious accessibility violations`, async ({ page }) => {
     await page.goto(path);
     const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();

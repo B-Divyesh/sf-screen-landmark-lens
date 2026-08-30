@@ -1,6 +1,27 @@
 # Screen Landmark Lens — repair handoff
 
-Repair commits: `b6e1ac0` and `0490d2a` (plus this handoff commit).
+Repair commits: `b6e1ac0`, `0490d2a`, and the static deployment repair commit.
+
+## Static deployment repair (2026-08-30)
+
+The completed source work was preserved. The failed Static Web Apps attempt used
+the parent `dist/` directory even though the documented static artifact is
+`dist/site`. A clean `npm run build:site` produces `dist/site/index.html` and
+`dist/site/staticwebapp.config.json`; `dist/index.html` does not exist. The
+factory wrapper rejects that parent directory before upload, which reproduces
+the failure condition without changing any Azure resource.
+
+`shared/static-deploy.test.ts` now locks the published Static Web Apps contract:
+the copied configuration has the `dist/site` fallback exclusions and the valid
+404 response override (`rewrite` plus `statusCode`, rather than an invalid
+route rule). The static site must be deployed with:
+
+```sh
+/opt/fleet/lib/deploy-static.sh screen-landmark-lens dist/site
+```
+
+The wrapper reuses or creates only `sf-screen-landmark-lens` and performs its
+documented region fallback before uploading this exact site root.
 
 ## Completed repair
 
@@ -27,6 +48,19 @@ cargo fmt --manifest-path src-tauri/Cargo.toml -- --check  # pass
 CARGO_BUILD_JOBS=1 cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings # pass
 CI=1 npm run tauri build -- --bundles deb  # pass; wrapper normalised CI=1
 dpkg-deb --info src-tauri/target/release/bundle/deb/Screen\ Landmark\ Lens_0.1.0_amd64.deb # pass
+```
+
+The static-deployment repair was additionally checked from a clean `npm ci`:
+
+```sh
+npm run build:site                         # pass; publishes dist/site/index.html
+npm test                                   # pass; 5 Vitest checks plus Rust tests
+npm run build                              # pass; dist/app and dist/site
+npm run test:web                           # pass; claims, offline/update, privacy, desktop and 390×844 mobile
+npm run test:app-web                       # pass; desktop sample, keyboard-safe controls, and uncertainty states
+cargo fmt --manifest-path src-tauri/Cargo.toml -- --check  # pass
+CARGO_BUILD_JOBS=1 cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings # pass
+CI=true CARGO_BUILD_JOBS=1 npm run tauri build -- --bundles deb # pass
 ```
 
 The package consumer check reports `screen-landmark-lens` 0.1.0, amd64, with the expected WebKit/GTK runtime dependencies; output size is 14,829,864 bytes.

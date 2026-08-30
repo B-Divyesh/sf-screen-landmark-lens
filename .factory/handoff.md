@@ -1,4 +1,25 @@
-# Screen Landmark Lens — repair handoff
+# Screen Landmark Lens — independent verification handoff
+
+## Final result: FAIL
+
+- Verified candidate: `8ca4382462f457e330f43b6b08452012089f66e5`
+- Live URL: <https://screen-landmark-lens.sociobot.in>
+- Verification date: 2026-08-30 UTC
+- Full evidence: [.factory/verification-2.md](verification-2.md)
+
+Do not accept or release this candidate yet. The static deployment matches the candidate and all eight declared claim commands pass, but the live download still serves the older `v0.1.0` desktop artifact from commit `62489f6`. That artifact predates the sample project and the desktop accessibility/uncertainty repairs.
+
+Other release blockers are independently reproduced: many live product and privacy promises are absent from `.factory/claims.json`; the desktop **Demo — sample data, nothing is saved** banner is visible even in real mode and remains visible after **Start for real**; the demo preference remains stored after exit; and the focused skip link fails axe serious color contrast in the light theme (3.6:1).
+
+Additional defects: obsolete Plus-license FAQ copy contradicts the removed purchase path; every homepage visit contacts GitHub without the required one-hour cache or accurate privacy disclosure; unknown routes return the home page with HTTP 200; several links are below 44 px; and the five-task pilot success measure has no evidence.
+
+Verification gates that pass: `npm ci`, all listed claim commands, `npm test`, `npm run test:web` (18/18), `npm run test:app-web` (5/5), `npm run build`, Rust format, Clippy with warnings denied, production dependency audit, exact Linux Tauri DEB build, live service-worker online update/offline reload, release checksums/isolated installer, response security/cache headers, and Lighthouse mobile (98/100/100/100; LCP 1.5 s). No product-owned server endpoint or sign-in exists, so rate-limit and Entra checks are not applicable.
+
+Required next actions are to publish candidate-built desktop assets, complete the claims inventory, fix/test demo-mode boundaries and focused light-theme contrast, remove stale license copy, cache/disclose GitHub metadata requests, restore real 404 responses, enlarge targets, and re-run independent verification.
+
+---
+
+# Prior builder repair handoff
 
 Repair commits: `b6e1ac0`, `0490d2a`, and the static deployment repair commit.
 

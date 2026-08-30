@@ -1,5 +1,4 @@
 import "./style.css";
-import { acceptLicenseFromUrl, LICENSE_KEY, verifyLicense } from "../../shared/license";
 
 type ReleaseAsset = { name: string; browser_download_url: string };
 type Release = { tag_name: string; assets: ReleaseAsset[] };
@@ -33,21 +32,40 @@ async function resolveDownloads() {
   }
 }
 
-if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("/sw.js").catch(() => undefined);
-if (acceptLicenseFromUrl()) verifyLicense(true).then((state) => {
-  const message = state?.valid ? "Purchase complete. Copy your license, then restore it in the desktop app." : "Your license was saved. Copy it into the desktop app to verify it.";
-  const banner = document.createElement("div");
-  banner.className = "license-banner";
-  banner.role = "status";
-  const copy = document.createElement("button");
-  copy.type = "button";
-  copy.textContent = "Copy license for desktop app";
-  copy.addEventListener("click", async () => {
-    const token = localStorage.getItem(LICENSE_KEY) || "";
-    await navigator.clipboard.writeText(token);
-    copy.textContent = "License copied";
+if ("serviceWorker" in navigator && (location.protocol === "https:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname))) navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+
+const sampleLandmarks: Record<string, string> = {
+  print: "Found OCR text “Print”, bottom center. Review the label if it sounds unexpected.",
+  save: "Found OCR text “Save”, bottom right. Review the label if it sounds unexpected.",
+  cancel: "Found OCR text “Cancel”, bottom right. Review the label if it sounds unexpected.",
+  "status: ready to submit": "Found OCR text “Status: Ready to submit”, middle center. Review the label if it sounds unexpected.",
+};
+
+function setupDemo() {
+  const form = document.querySelector<HTMLFormElement>("#demo-find-form");
+  const input = document.querySelector<HTMLInputElement>("#demo-find-input");
+  const result = document.querySelector<HTMLElement>("#demo-find-result");
+  if (!form || !input || !result) return;
+  const find = () => {
+    const query = input.value.trim().toLocaleLowerCase();
+    if (!query) {
+      result.textContent = "Enter a label to find, then choose Find sample label.";
+      input.focus();
+      return;
+    }
+    const match = Object.entries(sampleLandmarks).find(([label]) => label.includes(query));
+    result.textContent = match ? match[1] : `“${input.value.trim()}” was not found in the sample. Try Save, Print, Cancel, or Status.`;
+  };
+  form.addEventListener("submit", (event) => { event.preventDefault(); find(); });
+  document.querySelectorAll<HTMLButtonElement>("[data-sample-label]").forEach((button) => button.addEventListener("click", () => {
+    input.value = button.dataset.sampleLabel || "";
+    find();
+  }));
+  document.querySelector<HTMLButtonElement>("#reset-demo")?.addEventListener("click", () => {
+    input.value = "Save";
+    result.textContent = sampleLandmarks.save;
   });
-  banner.append(message, copy);
-  document.body.prepend(banner);
-});
-void resolveDownloads();
+}
+
+if (document.body.hasAttribute("data-demo-page")) setupDemo();
+else void resolveDownloads();

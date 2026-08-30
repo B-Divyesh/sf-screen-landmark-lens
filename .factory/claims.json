@@ -1,0 +1,58 @@
+[
+  {
+    "id": "demo-sample",
+    "claim": "Try the sample project and find Save at bottom right.",
+    "where": "Landing action and /demo/",
+    "test": "npm run test:web -- --grep @claim:demo-sample",
+    "sandbox": "Fresh browser context opens /demo/, searches the bundled sample for Save, and asserts the directional result and walkthrough."
+  },
+  {
+    "id": "demo-privacy",
+    "claim": "The sample demo sends no data to third parties.",
+    "where": "/demo/ banner",
+    "test": "npm run test:web -- --grep @claim:demo-privacy",
+    "sandbox": "Fresh browser records all requests while using /demo/ and accepts only the product origin."
+  },
+  {
+    "id": "offline-demo",
+    "claim": "The sample demo reloads offline after its first visit.",
+    "where": "README and demo documentation",
+    "test": "npm run test:web -- --grep @claim:offline-demo",
+    "sandbox": "A new browser context visits /demo/, waits for the worker, goes offline, reloads, and finds the demo heading."
+  },
+  {
+    "id": "site-updates",
+    "claim": "Online visitors receive the current site shell after an update.",
+    "where": "README",
+    "test": "npm run test:web -- --grep @claim:site-updates",
+    "sandbox": "Browser regression reads the deployed worker source and asserts a versioned cache plus network-first document requests."
+  },
+  {
+    "id": "desktop-sample",
+    "claim": "The desktop app includes a sample project that finds Save without a capture.",
+    "where": "Desktop first screen and README",
+    "test": "npm run test:app-web -- --grep @claim:desktop-sample",
+    "sandbox": "Browser-safe desktop UI opens ?demo=1, searches bundled sample labels, and asserts the Save result."
+  },
+  {
+    "id": "free-voice-speed",
+    "claim": "Voice-speed control is free.",
+    "where": "Desktop preferences and landing download section",
+    "test": "npm run test:app-web -- --grep @claim:free-voice-speed",
+    "sandbox": "Browser-safe desktop UI changes the enabled voice-speed slider without a license."
+  },
+  {
+    "id": "blank-find",
+    "claim": "Empty Find requests explain what to do next.",
+    "where": "Desktop Find text state",
+    "test": "npm run test:app-web -- --grep @claim:blank-find",
+    "sandbox": "Bundled sample is opened and an empty Find submission is asserted to give the exact recovery instruction."
+  },
+  {
+    "id": "ocr-uncertainty",
+    "claim": "OCR output is labeled as uncertain text, without a fabricated confidence percentage.",
+    "where": "Desktop landmark list and landing FAQ",
+    "test": "npm run test:app-web -- --grep @claim:ocr-uncertainty",
+    "sandbox": "Browser-safe desktop UI opens the bundled sample and asserts the honest OCR warning while rejecting the old quality-estimate wording."
+  }
+]

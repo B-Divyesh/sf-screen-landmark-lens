@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#101827" />
-    <title>Screen Landmark Lens</title>
+    <title>Screen Landmark Lens — Find labels in one window</title>
     <script type="module" src="/src/main.ts"></script>
   </head>
   <body>
@@ -20,7 +20,13 @@
         <p class="eyebrow">Window wayfinding</p>
         <h1 id="app-title">Find the control<br />you can’t reach.</h1>
         <p>Choose one visible window. Lens reads its labels locally and tells you where they are. It never clicks or sends a capture away.</p>
+        <button id="load-sample" class="sample-button" type="button">Load sample project</button>
       </section>
+
+      <aside id="demo-banner" class="demo-banner" aria-label="Demo mode" hidden>
+        <p><strong>Demo — sample data, nothing is saved.</strong> Explore a realistic legacy form without capturing a window.</p>
+        <div><button id="reset-demo" type="button">Reset demo</button><button id="start-real" type="button">Start for real</button></div>
+      </aside>
 
       <section class="workspace" aria-label="Landmark finder">
         <div class="station window-station">
@@ -72,19 +78,12 @@
         </div>
       </section>
 
-      <section class="plus-panel" aria-labelledby="plus-title">
-        <div><p class="eyebrow">Optional one-time unlock</p><h2 id="plus-title">Lens Plus</h2><p>Keep favourite target phrases and tune the voice speed for repeated work. Every capture, label, search, and directional cue stays free.</p></div>
-        <div id="plus-locked">
-          <a class="primary-button link-button" id="buy-link" href="https://api.sociobot.in/api/v1/products/screen-landmark-lens/checkout">Buy once — $19</a>
-          <details><summary>Have a license? Restore it</summary><form id="license-form"><label for="license-input">License token</label><input id="license-input" required autocomplete="off" /><button class="secondary-button" type="submit">Verify license</button></form></details>
-        </div>
-        <div id="plus-unlocked" hidden>
+      <section class="preferences-panel" aria-labelledby="preferences-title">
+        <div><p class="eyebrow">Listening preference</p><h2 id="preferences-title">Set voice speed</h2><p>Adjust spoken feedback to the pace that works for you. This accessibility preference is free.</p></div>
+        <div>
           <label for="speech-rate">Voice speed <output id="speech-rate-output">1×</output></label>
           <input id="speech-rate" type="range" min="0.6" max="1.6" value="1" step="0.1" />
-          <button id="save-target" class="secondary-button" type="button">Save current target</button>
-          <ul id="saved-targets" aria-label="Saved target phrases"></ul>
         </div>
-        <p id="license-status" class="status-copy" aria-live="polite"></p>
       </section>
     </main>
     <footer><p>Output may be incomplete. Lens is a wayfinding aid, not medical or professional advice.</p><nav aria-label="Legal"><a href="https://screen-landmark-lens.sociobot.in/privacy">Privacy</a><a href="https://screen-landmark-lens.sociobot.in/terms">Terms</a></nav></footer>

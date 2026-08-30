@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --config vite.app.config.ts",
     "dev:site": "vite --config vite.site.config.ts",
-    "tauri": "tauri",
+    "tauri": "node scripts/tauri.mjs",
     "build:app": "vite build --config vite.app.config.ts",
     "build:site": "vite build --config vite.site.config.ts",
     "build": "npm run build:app && npm run build:site",

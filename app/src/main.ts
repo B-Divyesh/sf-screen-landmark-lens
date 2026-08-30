@@ -1,7 +1,5 @@
 import "./style.css";
 import { invoke } from "@tauri-apps/api/core";
-import { openUrl } from "@tauri-apps/plugin-opener";
-import { acceptLicenseFromUrl, checkoutUrl, hasOptimisticUnlock, restoreLicense, verifyLicense } from "../../shared/license";
 import { findLandmarks, spokenLandmark, summarize, type Landmark } from "../../shared/landmarks";
 
 type WindowInfo = { id: number; title: string; appName: string; width: number; height: number };
@@ -16,7 +14,23 @@ const findInput = $("#find-input") as HTMLInputElement;
 const findButton = $("#find-form button") as HTMLButtonElement;
 const list = $("#landmark-list") as HTMLOListElement;
 let analysis: Analysis | null = null;
-let speechRate = Number(localStorage.getItem("lens:speech-rate") || 1);
+let demoMode = new URLSearchParams(location.search).get("demo") === "1";
+const storageKey = (name: string) => `${demoMode ? "demo:" : ""}lens:${name}`;
+let speechRate = Number(localStorage.getItem(storageKey("speech-rate")) || 1);
+
+const sampleAnalysis: Analysis = {
+  windowTitle: "Sample Legacy App — Quarterly report",
+  width: 1200,
+  height: 800,
+  elapsedMs: 0,
+  landmarks: [
+    { text: "Quarterly report", x: 72, y: 54, width: 240, height: 34, direction: "top left", likelyButton: false },
+    { text: "Status: Ready to submit", x: 430, y: 248, width: 280, height: 30, direction: "middle center", likelyButton: false },
+    { text: "Save", x: 920, y: 662, width: 88, height: 42, direction: "bottom right", likelyButton: true },
+    { text: "Cancel", x: 1024, y: 662, width: 96, height: 42, direction: "bottom right", likelyButton: true },
+    { text: "Print", x: 802, y: 662, width: 86, height: 42, direction: "bottom center", likelyButton: true },
+  ],
+};
 
 function announce(message: string, speak = false) {
   $("#announcer").textContent = "";
@@ -33,6 +47,24 @@ function setBusy(busy: boolean) {
   scanButton.disabled = busy || !select.value;
   scanButton.querySelector("span")!.textContent = busy ? "Reading locally…" : "Capture and read";
   document.body.toggleAttribute("data-busy", busy);
+}
+
+function setDemoMode(enabled: boolean) {
+  demoMode = enabled;
+  const url = new URL(location.href);
+  if (enabled) url.searchParams.set("demo", "1");
+  else url.searchParams.delete("demo");
+  history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+  document.querySelector<HTMLElement>("#demo-banner")!.hidden = !enabled;
+}
+
+function loadSample() {
+  setDemoMode(true);
+  analysis = structuredClone(sampleAnalysis);
+  renderLandmarks();
+  [readButton, buttonsButton, findInput, findButton].forEach((element) => { element.disabled = false; });
+  $("#scan-meta").textContent = "5 sample labels loaded. No capture was made and nothing was saved.";
+  announce("Sample project loaded. Five visible labels are ready to explore.", true);
 }
 
 function showError(message: string) {
@@ -100,7 +132,7 @@ function renderLandmarks() {
     empty.hidden = false; list.hidden = true;
   } else {
     empty.hidden = true; list.hidden = false;
-    list.innerHTML = items.map((item, index) => `<li><button type="button" data-index="${index}"><span class="landmark-text">${escapeHtml(item.text)}</span><span class="direction">${escapeHtml(item.direction)} · ${Math.round(item.confidence * 100)}% OCR quality estimate</span></button></li>`).join("");
+    list.innerHTML = items.map((item, index) => `<li><button type="button" data-index="${index}"><span class="landmark-text">${escapeHtml(item.text)}</span><span class="direction">${escapeHtml(item.direction)} · OCR text; review if it sounds unexpected</span></button></li>`).join("");
   }
   [readButton, buttonsButton, findInput, findButton].forEach((element) => element.disabled = !items.length);
 }
@@ -117,34 +149,33 @@ function describeButtons() {
 }
 
 function runFind() {
+  const query = findInput.value.trim();
+  if (!query) {
+    const message = "Enter a label to find, then choose Find.";
+    $("#find-result").textContent = message;
+    announce(message, true);
+    findInput.focus();
+    return;
+  }
   const matches = findLandmarks(analysis?.landmarks || [], findInput.value);
   const message = matches.length
     ? matches.map(spokenLandmark).join(" ")
-    : `“${findInput.value.trim()}” was not found in the latest capture. Check the spelling or capture again after revealing it.`;
+    : `“${query}” was not found in the latest capture. Check the spelling or capture again after revealing it.`;
   $("#find-result").textContent = message;
   announce(message, true);
 }
 
-function setPlus(unlocked: boolean, notice = "") {
-  $("#plus-locked").hidden = unlocked;
-  $("#plus-unlocked").hidden = !unlocked;
-  $("#license-status").textContent = notice;
-}
-
-function loadSavedTargets() {
-  const targets = JSON.parse(localStorage.getItem("lens:saved-targets") || "[]") as string[];
-  $("#saved-targets").innerHTML = targets.map((target) => `<li><button type="button" data-target="${escapeHtml(target)}">${escapeHtml(target)}</button></li>`).join("");
-}
-
-async function setupLicense() {
-  const arrived = acceptLicenseFromUrl();
-  setPlus(hasOptimisticUnlock(), hasOptimisticUnlock() ? "Lens Plus is active on this device." : "");
-  const state = await verifyLicense(arrived);
-  if (state) setPlus(state.valid, state.valid ? "Lens Plus is active on this device." : "License no longer active. Core wayfinding remains available.");
-  loadSavedTargets();
-}
-
 select.addEventListener("change", () => { scanButton.disabled = !select.value; });
+$("#load-sample").addEventListener("click", loadSample);
+$("#reset-demo").addEventListener("click", loadSample);
+$("#start-real").addEventListener("click", () => {
+  analysis = null;
+  setDemoMode(false);
+  renderLandmarks();
+  $("#scan-meta").textContent = "Waiting for a selected window.";
+  void loadWindows();
+  announce("Demo ended. Choose a visible window to begin.");
+});
 $("#refresh-windows").addEventListener("click", loadWindows);
 scanButton.addEventListener("click", scan);
 readButton.addEventListener("click", readAll);
@@ -160,28 +191,10 @@ document.addEventListener("keydown", (event) => {
   if (event.key.toLowerCase() === "b" && !buttonsButton.disabled) { event.preventDefault(); describeButtons(); }
   if (event.key.toLowerCase() === "f") { event.preventDefault(); findInput.focus(); }
 });
-$("#buy-link").addEventListener("click", (event) => { event.preventDefault(); openUrl(checkoutUrl).catch(() => location.assign(checkoutUrl)); });
-$("#license-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  $("#license-status").textContent = "Verifying license…";
-  const state = await restoreLicense(($("#license-input") as HTMLInputElement).value);
-  setPlus(Boolean(state?.valid), state?.valid ? "Lens Plus restored." : "That license could not be verified. Check the token and try again.");
-});
 const rateInput = $("#speech-rate") as HTMLInputElement;
 rateInput.value = String(speechRate);
 $("#speech-rate-output").textContent = `${speechRate}×`;
-rateInput.addEventListener("input", () => { speechRate = Number(rateInput.value); localStorage.setItem("lens:speech-rate", String(speechRate)); $("#speech-rate-output").textContent = `${speechRate}×`; });
-$("#save-target").addEventListener("click", () => {
-  const target = findInput.value.trim();
-  if (!target) { $("#license-status").textContent = "Enter a target in Find text before saving it."; findInput.focus(); return; }
-  const saved = JSON.parse(localStorage.getItem("lens:saved-targets") || "[]") as string[];
-  localStorage.setItem("lens:saved-targets", JSON.stringify([...new Set([target, ...saved])].slice(0, 12)));
-  loadSavedTargets(); $("#license-status").textContent = `Saved “${target}”.`;
-});
-$("#saved-targets").addEventListener("click", (event) => {
-  const button = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-target]");
-  if (button) { findInput.value = button.dataset.target!; if (analysis) runFind(); else findInput.focus(); }
-});
+rateInput.addEventListener("input", () => { speechRate = Number(rateInput.value); localStorage.setItem(storageKey("speech-rate"), String(speechRate)); $("#speech-rate-output").textContent = `${speechRate}×`; });
 
-void loadWindows();
-void setupLicense();
+if (demoMode) loadSample();
+else void loadWindows();

@@ -4,7 +4,6 @@ export type Landmark = {
   y: number;
   width: number;
   height: number;
-  confidence: number;
   direction: string;
   likelyButton: boolean;
 };
@@ -20,8 +19,7 @@ export function findLandmarks(items: Landmark[], query: string): Landmark[] {
 }
 
 export function spokenLandmark(item: Landmark): string {
-  const uncertainty = item.confidence < 0.65 ? "It may read" : "Found";
-  return `${uncertainty} ${item.text}, ${item.direction}.`;
+  return `Found OCR text “${item.text}”, ${item.direction}. Review the label if it sounds unexpected.`;
 }
 
 export function summarize(items: Landmark[]): string {

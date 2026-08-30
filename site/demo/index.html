@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#101827" />
+    <meta name="description" content="Try Screen Landmark Lens with a sample legacy window. Nothing is saved." />
+    <title>Demo — Screen Landmark Lens</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href="https://screen-landmark-lens.sociobot.in/demo/" />
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body data-demo-page>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Screen Landmark Lens home"><span class="mark" aria-hidden="true"></span><span>Landmark Lens</span></a>
+      <nav aria-label="Main navigation"><a href="/">Home</a><a href="#sample">Sample project</a><a href="#walkthrough">Walkthrough</a></nav>
+    </header>
+    <main id="main">
+      <aside class="demo-site-banner" aria-label="Demo mode">
+        <p><strong>Demo — sample data, nothing is saved.</strong> This sample mirrors a legacy form and never opens another window.</p>
+        <div><button id="reset-demo" type="button">Reset demo</button><a href="/">Start for real</a></div>
+      </aside>
+      <section class="demo-hero" id="sample" aria-labelledby="demo-title">
+        <div>
+          <p class="eyebrow">Sample legacy window</p>
+          <h1 id="demo-title">Find a visible control with sample data.</h1>
+          <p class="lede">Search the sample quarterly report. Lens returns OCR text and a direction, then leaves the real desktop untouched.</p>
+        </div>
+        <section class="sample-workspace" aria-labelledby="sample-window-title">
+          <div class="sample-titlebar"><span aria-hidden="true"></span><span id="sample-window-title">Sample Legacy App — Quarterly report</span></div>
+          <div class="sample-content">
+            <p class="sample-status">Status: Ready to submit</p>
+            <div class="sample-table" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            <div class="sample-buttons"><button type="button" data-sample-label="Print">Print</button><button type="button" data-sample-label="Save">Save</button><button type="button" data-sample-label="Cancel">Cancel</button></div>
+          </div>
+          <form id="demo-find-form" class="demo-find-form">
+            <label for="demo-find-input">Label to find</label>
+            <div><input id="demo-find-input" type="search" value="Save" autocomplete="off" /><button type="submit">Find sample label</button></div>
+          </form>
+          <p id="demo-find-result" class="demo-result" role="status">Found OCR text “Save”, bottom right. Review the label if it sounds unexpected.</p>
+        </section>
+      </section>
+      <section class="walkthrough section" id="walkthrough" aria-labelledby="walkthrough-title">
+        <div class="section-intro"><p class="eyebrow">Sample walkthrough</p><h2 id="walkthrough-title">Use the desktop app in three steps.</h2></div>
+        <ol class="walkthrough-frames">
+          <li><img src="/assets/demo-choose.svg" alt="Desktop app screen showing the Choose a window step." width="640" height="400" /><h3>Choose a window</h3><p>Pick the one visible window Lens may capture.</p></li>
+          <li><img src="/assets/demo-read.svg" alt="Desktop app screen showing OCR labels in reading order." width="640" height="400" /><h3>Read labels</h3><p>Hear or review the OCR text in reading order.</p></li>
+          <li><img src="/assets/demo-find.svg" alt="Desktop app screen showing Save found at bottom right." width="640" height="400" /><h3>Find a target</h3><p>Enter a label and receive a directional cue.</p></li>
+        </ol>
+      </section>
+    </main>
+    <footer><div><a class="wordmark" href="/"><span class="mark" aria-hidden="true"></span><span>Landmark Lens</span></a><p>A local visual landmark finder by Param Factory.</p><p>Version 0.1 · Build repair-1</p></div><nav aria-label="Footer navigation"><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav></footer>
+  </body>
+</html>

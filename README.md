@@ -13,8 +13,9 @@ Live site: <https://screen-landmark-lens.sociobot.in>
 - Bundled `ocrs` detection and recognition models for offline OCR
 - Keyboard-first label reading (`Alt+Shift+L`), text finding (`Alt+Shift+F`), and likely-button descriptions (`Alt+Shift+B`)
 - Spoken feedback through the operating system’s Web Speech voice
-- Free core wayfinding plus an optional $19 one-time Lens Plus license for saved target phrases and voice-speed preferences
-- Static download site, privacy and terms pages, service worker, and checksum-verifying installers
+- Bundled sample project: find Save, Print, Cancel, and a status label before capturing a real window
+- Free wayfinding and voice-speed preference controls; no account or purchase is required in this build
+- Static download site, privacy and terms pages, versioned service worker, and checksum-verifying installers
 
 ## Install
 
@@ -45,11 +46,27 @@ npm run build        # dist/app and deployable dist/site
 npm run tauri build  # native bundle for the current host
 ```
 
-The factory’s static deploy uses the exact command `npm run build:site` and publishes `dist/site` (whose root contains `index.html`). Native binaries are built only in GitHub Actions when a `v*` tag is pushed or the release workflow is dispatched.
+The factory’s static deploy uses the exact command `npm run build:site` and publishes `dist/site` (whose root contains `index.html`). Native binaries are built only in GitHub Actions when a `v*` tag is pushed or the release workflow is dispatched. In a CI environment, `CI=true CARGO_BUILD_JOBS=1 npm run tauri build -- --bundles deb` is supported.
 
-## Privacy and licensing
+## Demo and checks
 
-Captured pixels exist in memory only during OCR and are dropped when analysis returns. Preferences, saved phrases, and the optional token use local storage. License verification calls only `https://api.sociobot.in`; it runs at most once per day and never blocks free functionality.
+Open [`/demo/`](https://screen-landmark-lens.sociobot.in/demo/) for an isolated, one-click sample. The desktop app also has **Load sample project** on its first screen. The sample data is bundled, uses no real capture, and is discarded with **Start for real**. See [.factory/demo.md](.factory/demo.md) and [.factory/claims.json](.factory/claims.json) for exact claim coverage.
+
+The service worker uses versioned caches and serves navigation requests from the network whenever online, so deployed fixes replace an older shell. Run the complete local suite with:
+
+```sh
+npm ci
+npm test
+npm run test:web
+npm run test:app-web
+npm run build
+cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+CARGO_BUILD_JOBS=1 cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+```
+
+## Privacy
+
+Captured pixels exist in memory only during OCR and are dropped when analysis returns. Voice speed is stored locally. In demo mode, it uses a separate `demo:lens:speech-rate` key; the website demo stores nothing. This repair intentionally removes the unavailable checkout rather than advertising a purchase that cannot complete. Restoring paid licensing requires the factory to register the production product before a future release.
 
 The `ocrs` code and model project are MIT/Apache-2.0 licensed. The generated hero is original to this project; its prompt and review record are in `assets/src/`. See [.factory/design.md](.factory/design.md) for the visual system and [.factory/handoff.md](.factory/handoff.md) for verification and release notes.
 

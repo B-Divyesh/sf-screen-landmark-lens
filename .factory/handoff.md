@@ -7,15 +7,16 @@ Repair commits: `b6e1ac0`, `0490d2a`, and the static deployment repair commit.
 The completed source work was preserved. The factory wrapper reproduced the
 Static Web Apps validation error exactly: `/assets/*.avif` was covered by the
 earlier `/assets/*` wildcard route, so Azure rejected the deployment before
-upload. The specific AVIF route now appears first. A clean `npm run build:site`
-produces `dist/site/index.html` and `dist/site/staticwebapp.config.json`, the
-artifact root required by the deployment configuration.
+upload. The unreachable AVIF route was removed; the real `mimeTypes` override
+now declares `.avif` as `image/avif`. A clean `npm run build:site` produces
+`dist/site/index.html` and `dist/site/staticwebapp.config.json`, the artifact
+root required by the deployment configuration.
 
 `shared/static-deploy.test.ts` now locks the published Static Web Apps contract:
 the copied configuration has the `dist/site` fallback exclusions, the valid 404
 response override (`rewrite` plus `statusCode`, rather than an invalid route
-rule), and the required specific-before-wildcard route order. The static site
-must be deployed with:
+rule), and an AVIF MIME declaration that does not conflict with the asset
+wildcard. The static site must be deployed with:
 
 ```sh
 /opt/fleet/lib/deploy-static.sh screen-landmark-lens dist/site

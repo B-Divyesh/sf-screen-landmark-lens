@@ -5,6 +5,7 @@ type StaticWebAppsConfig = {
   navigationFallback?: { rewrite?: string; exclude?: string[] };
   responseOverrides?: Record<string, { rewrite?: string; statusCode?: number }>;
   routes?: Array<{ route?: string; headers?: Record<string, string> }>;
+  mimeTypes?: Record<string, string>;
 };
 
 const config = JSON.parse(
@@ -26,14 +27,10 @@ describe("static deployment artifact", () => {
     expect(config.responseOverrides?.["404"]).toEqual({ rewrite: "/404.html", statusCode: 404 });
   });
 
-  it("puts the AVIF route before the assets wildcard so Static Web Apps can evaluate it", () => {
+  it("declares AVIF with a MIME override instead of an unreachable asset route", () => {
     const routes = config.routes ?? [];
-    const avifIndex = routes.findIndex((route) => route.route === "/assets/*.avif");
-    const assetsIndex = routes.findIndex((route) => route.route === "/assets/*");
 
-    expect(avifIndex).toBeGreaterThanOrEqual(0);
-    expect(assetsIndex).toBeGreaterThanOrEqual(0);
-    expect(avifIndex).toBeLessThan(assetsIndex);
-    expect(routes[avifIndex]?.headers).toEqual({ "Content-Type": "image/avif" });
+    expect(config.mimeTypes?.[".avif"]).toBe("image/avif");
+    expect(routes.find((route) => route.route === "/assets/*.avif")).toBeUndefined();
   });
 });

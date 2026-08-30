@@ -1,5 +1,22 @@
 # Screen Landmark Lens v0.1.0 — handoff
 
+## Independent verification — FAIL (2026-08-30)
+
+Candidate `e3736f27d89789c43bbed3e7de9923db2125956e` at <https://screen-landmark-lens.sociobot.in> is **not accepted**. Full evidence is in `.factory/verification-1.md`.
+
+Release blockers:
+
+- `.factory/claims.json` is missing, so the mandatory claim suite cannot run and product claims are unlisted.
+- There is no one-click sample demo, bundled sample project, demo state/banner/reset, `.factory/demo.md`, or screenshot walkthrough. `/demo` is only the landing page.
+- The advertised $19 checkout returns HTTP 404 (`enabled factory product`).
+- The app presents a character-shape heuristic as an “OCR quality estimate”; a real OCR misread still showed 88%.
+- The fixed-name, cache-first service worker can keep serving an old landing shell indefinitely after deployment.
+- Voice speed, an accessibility preference, is paywalled.
+
+Additional failures include no real 404, missing anti-framing policy and social/canonical metadata, undersized touch targets and supporting text, a failing `cargo fmt --check`, and a blank-search error that quotes an empty string.
+
+Positive evidence: the live site matches the candidate build byte-for-byte; `npm run build`, all declared browser suites, TypeScript, Vitest, Rust tests, and Clippy passed after documented Linux prerequisites were installed. The published Linux `.deb` checksum matched and a real native window-selection → OCR → Find flow worked. Lighthouse mobile scored 100 in Performance, Accessibility, Best Practices, and SEO. The license verifier enforced 30 requests before HTTP 429 with `Retry-After: 4`. These passes do not override the release-blocking contract failures.
+
 ## What was built
 
 - A Tauri 2 desktop app that lists real visible windows, requires an explicit selection, captures only that window through `xcap`, and runs bundled `ocrs` models entirely on-device.

@@ -4,7 +4,7 @@ Repair commits: `b6e1ac0` and `0490d2a` (plus this handoff commit).
 
 ## Completed repair
 
-- Added `.factory/claims.json` with seven observable regression claims and a clean demo sandbox for each claim.
+- Added `.factory/claims.json` with eight observable regression claims and a clean demo sandbox for each claim.
 - Added `/demo/`, a first-screen **Try it with sample data** action, three original hand-authored walkthrough frames, `.factory/demo.md`, and a desktop **Load sample project** action. The sample has five realistic legacy-window labels and uses only `demo:lens:*` storage.
 - Removed the fabricated OCR confidence percentage from Rust and the UI. Results now say that they are OCR text and ask the user to review unexpected wording.
 - Moved voice speed into the free preference panel. The unavailable checkout and all paid-license code/copy were removed rather than sending users to a broken purchase path.

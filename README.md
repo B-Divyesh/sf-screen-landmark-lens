@@ -29,7 +29,7 @@ curl -fsSL https://screen-landmark-lens.sociobot.in/install.sh | sh
 irm https://screen-landmark-lens.sociobot.in/install.ps1 | iex
 ```
 
-Version 0.1 builds are unsigned. On macOS, right-click the installed app and choose **Open** the first time. Windows may show a SmartScreen notice. Screen-capture permission is requested by the operating system when needed.
+Version 0.1.1 builds are unsigned. On macOS, right-click the installed app and choose **Open** the first time. Windows may show a SmartScreen notice. Screen-capture permission is requested by the operating system when needed.
 
 ## Develop
 
@@ -46,7 +46,7 @@ npm run build        # dist/app and deployable dist/site
 npm run tauri build  # native bundle for the current host
 ```
 
-The factory’s static deploy uses the exact command `npm run build:site` and publishes `dist/site` (whose root contains `index.html`). Native binaries are built only in GitHub Actions when a `v*` tag is pushed or the release workflow is dispatched. In a CI environment, `CI=true CARGO_BUILD_JOBS=1 npm run tauri build -- --bundles deb` is supported.
+The factory’s static deploy uses the exact command `npm run build:site` and publishes `dist/site` (whose root contains `index.html`). Native binaries are built only in GitHub Actions from a `v*` tag. The workflow verifies that tag points to its checkout and records that exact commit in `latest.json` beside the platform assets and `SHA256SUMS`. In a CI environment, `CI=true CARGO_BUILD_JOBS=1 npm run tauri build -- --bundles deb` is supported.
 
 ## Demo and checks
 
@@ -66,7 +66,9 @@ CARGO_BUILD_JOBS=1 cargo clippy --manifest-path src-tauri/Cargo.toml --all-targe
 
 ## Privacy
 
-Captured pixels exist in memory only during OCR and are dropped when analysis returns. Voice speed is stored locally. In demo mode, it uses a separate `demo:lens:speech-rate` key; the website demo stores nothing. This repair intentionally removes the unavailable checkout rather than advertising a purchase that cannot complete. Restoring paid licensing requires the factory to register the production product before a future release.
+Captured pixels exist in memory only during OCR and are dropped when analysis returns. Voice speed is stored locally. In demo mode, it uses a separate `demo:lens:speech-rate` key; **Start for real** clears that key and restores the regular preference. The website demo stores nothing. All shipped wayfinding features are free and need no account or purchase.
+
+The landing page asks `api.github.com` for current release metadata at most once per hour in a browser. If metadata is unavailable, its download buttons keep a direct link to the Release page. The website privacy policy describes this request.
 
 The `ocrs` code and model project are MIT/Apache-2.0 licensed. The generated hero is original to this project; its prompt and review record are in `assets/src/`. See [.factory/design.md](.factory/design.md) for the visual system and [.factory/handoff.md](.factory/handoff.md) for verification and release notes.
 

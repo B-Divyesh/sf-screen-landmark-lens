@@ -4,12 +4,17 @@ on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing v* tag to build and publish
+        required: true
+        type: string
 
 permissions:
   contents: write
 
 env:
-  RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || 'v0.1.0' }}
+  RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || inputs.release_tag }}
 
 jobs:
   build:
@@ -32,6 +37,12 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_type == 'tag' && github.ref_name || inputs.release_tag }}
+      - name: Verify the tag points at the release source
+        shell: bash
+        run: |
+          test "$(git tag --points-at HEAD | grep -Fx "$RELEASE_TAG")" = "$RELEASE_TAG"
       - name: Install Linux build dependencies
         if: matrix.platform == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libx11-dev libxcb1-dev libxrandr-dev libdbus-1-dev libpipewire-0.3-dev libwayland-dev libclang-dev clang libgbm-dev
@@ -91,12 +102,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_type == 'tag' && github.ref_name || inputs.release_tag }}
       - uses: actions/download-artifact@v4
         with:
           path: release-assets
           merge-multiple: true
       - name: Create checksum and download manifests
-        run: node scripts/make-release-manifest.mjs release-assets
+        run: GITHUB_SHA="$(git rev-parse HEAD)" node scripts/make-release-manifest.mjs release-assets
       - name: Verify release manifest
         run: |
           jq -e '.version and .platforms.windows.url and .platforms["macos-arm64"].url and .platforms["macos-x64"].url and .platforms.linux.url' release-assets/latest.json
@@ -110,6 +123,8 @@ jobs:
           prerelease: false
           body: |
             First public build of Screen Landmark Lens. All window captures and OCR stay on the device.
+
+            The attached latest.json records the exact source commit used for this release.
 
             These binaries are unsigned. macOS users should right-click the app and choose Open; Windows may show SmartScreen.
           files: release-assets/*

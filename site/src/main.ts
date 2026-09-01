@@ -3,6 +3,10 @@ import "./style.css";
 type ReleaseAsset = { name: string; browser_download_url: string };
 type Release = { tag_name: string; assets: ReleaseAsset[] };
 const releaseApi = "https://api.github.com/repos/B-Divyesh/sf-screen-landmark-lens/releases/latest";
+const releaseCacheKey = "lens:release-metadata:v1";
+const releaseCacheLifetimeMs = 60 * 60 * 1000;
+
+type CachedRelease = { expiresAt: number; release: Release };
 
 function platformKey(): { key: string; label: string } {
   const platform = (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform || navigator.platform || navigator.userAgent;
@@ -19,16 +23,37 @@ async function resolveDownloads() {
   const { key, label } = platformKey();
   const buttons = [document.querySelector<HTMLAnchorElement>("#platform-download"), document.querySelector<HTMLAnchorElement>("#platform-download-2")];
   buttons.forEach((button) => { if (button) button.textContent = label; });
+  const releaseNote = document.querySelector<HTMLElement>("#release-note")!;
+  const suffixes: Record<string, string> = { windows: "_windows.msi", "macos-arm64": "_macos-arm64.dmg", "macos-x64": "_macos-x64.dmg", linux: "_linux.AppImage" };
+  const applyRelease = (release: Release) => {
+    const download = release.assets.find((asset) => asset.name.endsWith(suffixes[key]));
+    if (!download) throw new Error("Platform asset is not published");
+    buttons.forEach((button) => { if (button) button.href = download.browser_download_url; });
+    releaseNote.textContent = `Version ${release.tag_name.replace(/^v/, "")} · Free core tools · SHA-256 checked`;
+  };
+
+  try {
+    const cached = JSON.parse(localStorage.getItem(releaseCacheKey) || "null") as CachedRelease | null;
+    if (cached && cached.expiresAt > Date.now() && cached.release?.tag_name && Array.isArray(cached.release.assets)) {
+      applyRelease(cached.release);
+      return;
+    }
+  } catch {
+    // Storage may be unavailable; the release API still has a safe fallback.
+  }
+
   try {
     const response = await fetch(releaseApi);
     if (!response.ok) throw new Error("No release");
     const release = await response.json() as Release;
-    const suffixes: Record<string, string> = { windows: "_windows.msi", "macos-arm64": "_macos-arm64.dmg", "macos-x64": "_macos-x64.dmg", linux: "_linux.AppImage" };
-    const download = release.assets.find((asset) => asset.name.endsWith(suffixes[key]));
-    if (download) buttons.forEach((button) => { if (button) button.href = download.browser_download_url; });
-    document.querySelector("#release-note")!.textContent = `Version ${release.tag_name.replace(/^v/, "")} · Free core tools · signed checksum`;
+    applyRelease(release);
+    try {
+      localStorage.setItem(releaseCacheKey, JSON.stringify({ expiresAt: Date.now() + releaseCacheLifetimeMs, release } satisfies CachedRelease));
+    } catch {
+      // A privacy-restricted browser can still use the resolved download link.
+    }
   } catch {
-    document.querySelector("#release-note")!.textContent = "Latest release · macOS, Windows, Linux";
+    releaseNote.textContent = "Downloads are being published. Open the release page.";
   }
 }
 

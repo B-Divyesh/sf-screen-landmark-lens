@@ -47,3 +47,55 @@ test("@claim:ocr-uncertainty OCR results never show a fabricated percentage", as
   await expect(page.locator("#landmark-list")).toContainText("OCR text; review if it sounds unexpected");
   await expect(page.locator("#landmark-list")).not.toContainText("quality estimate");
 });
+
+test("@claim:demo-mode-isolation demo mode never labels or configures real mode", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("lens:speech-rate", "1.2"));
+  await page.goto("/");
+  await expect(page.locator("#demo-banner")).toHaveAttribute("hidden", "");
+  await expect(page.locator("#demo-banner")).not.toBeVisible();
+  await expect(page.locator("#speech-rate")).toHaveValue("1.2");
+
+  await page.locator("#load-sample").click();
+  await expect(page).toHaveURL(/\?demo=1/);
+  await expect(page.locator("#demo-banner")).toBeVisible();
+  await page.locator("#speech-rate").fill("1.4");
+  expect(await page.evaluate(() => localStorage.getItem("demo:lens:speech-rate"))).toBe("1.4");
+
+  await page.locator("#start-real").click();
+  await expect(page).toHaveURL("/");
+  await expect(page.locator("#demo-banner")).toHaveAttribute("hidden", "");
+  await expect(page.locator("#demo-banner")).not.toBeVisible();
+  await expect(page.locator("#speech-rate")).toHaveValue("1.2");
+  expect(await page.evaluate(() => localStorage.getItem("demo:lens:speech-rate"))).toBeNull();
+  expect(await page.evaluate(() => localStorage.getItem("lens:speech-rate"))).toBe("1.2");
+});
+
+test("@claim:desktop-shortcuts keyboard shortcuts run the three sample actions", async ({ page }) => {
+  await page.goto("/?demo=1");
+  await page.keyboard.press("Alt+Shift+F");
+  await expect(page.locator("#find-input")).toBeFocused();
+  await page.locator("#find-input").fill("Save");
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#find-result")).toContainText("bottom right");
+  await page.keyboard.press("Alt+Shift+B");
+  await expect(page.locator("#find-result")).toContainText("likely buttons");
+  await page.keyboard.press("Alt+Shift+L");
+  await expect(page.locator("#announcer")).toContainText("visible labels");
+});
+
+test("light-theme skip link remains high contrast when keyboard focused", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/");
+  await page.keyboard.press("Tab");
+  await expect(page.locator(".skip-link")).toBeVisible();
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
+  expect(results.violations.filter((violation) => ["serious", "critical"].includes(violation.impact || ""))).toEqual([]);
+});
+
+test("desktop legal and home links meet the 44px touch-target baseline", async ({ page }) => {
+  await page.goto("/");
+  for (const locator of [page.locator(".wordmark"), page.locator("footer a").first()]) {
+    const box = await locator.boundingBox();
+    expect(box?.height).toBeGreaterThanOrEqual(44);
+  }
+});

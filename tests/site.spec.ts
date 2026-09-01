@@ -6,7 +6,12 @@ test("landing page has a clear, working download path", async ({ page }) => {
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
   await page.route("https://api.github.com/repos/**/releases/latest", (route) => route.fulfill({
     contentType: "application/json",
-    body: JSON.stringify({ tag_name: "v0.1.0", assets: [{ name: "Screen-Landmark-Lens_0.1.0_linux.AppImage", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.0/app.AppImage" }] })
+    body: JSON.stringify({ tag_name: "v0.1.1", assets: [
+      { name: "Screen-Landmark-Lens_0.1.1_windows.msi", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.1/app.msi" },
+      { name: "Screen-Landmark-Lens_0.1.1_linux.AppImage", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.1/app.AppImage" },
+      { name: "Screen-Landmark-Lens_0.1.1_macos-arm64.dmg", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.1/arm.dmg" },
+      { name: "Screen-Landmark-Lens_0.1.1_macos-x64.dmg", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.1/x64.dmg" },
+    ] })
   }));
   await page.goto("/");
   await expect(page).toHaveTitle(/Screen Landmark Lens/);
@@ -14,8 +19,62 @@ test("landing page has a clear, working download path", async ({ page }) => {
   await expect(page.locator("h1")).toHaveCount(1);
   await expect(page.locator("#platform-download")).toBeVisible();
   await expect(page.locator("#platform-download")).toHaveAttribute("href", /github\.com\/B-Divyesh/);
+  await expect(page.locator("#release-note")).toContainText("Version 0.1.1");
   await expect(page.locator("img[alt]")).toHaveCount(1);
   expect(errors).toEqual([]);
+});
+
+test("@claim:release-metadata-cache release metadata is cached locally for one hour", async ({ browser }) => {
+  let requests = 0;
+  const context = await browser.newContext();
+  await context.addInitScript(() => {
+    if (!sessionStorage.getItem("release-cache-cleared")) {
+      localStorage.removeItem("lens:release-metadata:v1");
+      sessionStorage.setItem("release-cache-cleared", "true");
+    }
+  });
+  await context.route("https://api.github.com/repos/**/releases/latest", (route) => {
+    requests += 1;
+    return route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ tag_name: "v0.1.1", assets: [
+        { name: "Screen-Landmark-Lens_0.1.1_windows.msi", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.1/app.msi" },
+        { name: "Screen-Landmark-Lens_0.1.1_linux.AppImage", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.1/app.AppImage" },
+        { name: "Screen-Landmark-Lens_0.1.1_macos-arm64.dmg", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.1/arm.dmg" },
+        { name: "Screen-Landmark-Lens_0.1.1_macos-x64.dmg", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.1/x64.dmg" },
+      ] }),
+    });
+  });
+  const page = await context.newPage();
+  try {
+    await page.goto("http://127.0.0.1:4173/");
+    await expect(page.locator("#release-note")).toContainText("Version 0.1.1");
+    await page.reload();
+    await expect(page.locator("#release-note")).toContainText("Version 0.1.1");
+    expect(requests).toBe(1);
+    const cached = await page.evaluate(() => JSON.parse(localStorage.getItem("lens:release-metadata:v1") || "null"));
+    expect(cached.expiresAt - Date.now()).toBeGreaterThan(59 * 60 * 1000);
+  } finally {
+    await context.close();
+  }
+});
+
+test("@claim:release-metadata-fallback unavailable metadata leaves a calm release-page link", async ({ page }) => {
+  const errors: string[] = [];
+  await page.addInitScript(() => localStorage.removeItem("lens:release-metadata:v1"));
+  page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
+  await page.route("https://api.github.com/repos/**/releases/latest", (route) => route.fulfill({ contentType: "application/json", body: "{}" }));
+  await page.goto("/");
+  await expect(page.locator("#release-note")).toHaveText("Downloads are being published. Open the release page.");
+  await expect(page.locator("#platform-download")).toHaveAttribute("href", /releases\/latest$/);
+  expect(errors).toEqual([]);
+});
+
+test("website privacy link meets the 44px touch-target baseline", async ({ page }) => {
+  await page.route("https://api.github.com/repos/**/releases/latest", (route) => route.fulfill({ contentType: "application/json", body: "{}" }));
+  await page.goto("/");
+  const box = await page.getByRole("link", { name: /Read the plain-language privacy policy/ }).boundingBox();
+  expect(box?.height).toBeGreaterThanOrEqual(44);
 });
 
 test("@claim:demo-sample sample demo finds an included control", async ({ page }) => {
@@ -59,6 +118,15 @@ test("@claim:site-updates navigations use a versioned, network-first worker", as
 
 for (const path of ["/", "/demo/", "/privacy/", "/terms/"]) {
   test(`${path} has no serious accessibility violations`, async ({ page }) => {
+    await page.goto(path);
+    const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
+    expect(results.violations.filter((violation) => ["serious", "critical"].includes(violation.impact || ""))).toEqual([]);
+  });
+}
+
+for (const path of ["/", "/demo/", "/privacy/", "/terms/"]) {
+  test(`${path} has no serious light-theme accessibility violations`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "light" });
     await page.goto(path);
     const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
     expect(results.violations.filter((violation) => ["serious", "critical"].includes(violation.impact || ""))).toEqual([]);

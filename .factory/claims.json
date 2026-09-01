@@ -8,14 +8,14 @@
   },
   {
     "id": "demo-privacy",
-    "claim": "The sample demo sends no data to third parties.",
-    "where": "/demo/ banner",
+    "claim": "The website sample demo sends no data to third parties.",
+    "where": "/demo/ banner and privacy policy",
     "test": "npm run test:web -- --grep @claim:demo-privacy",
-    "sandbox": "Fresh browser records all requests while using /demo/ and accepts only the product origin."
+    "sandbox": "Fresh browser records every request while using /demo/ and accepts only the product origin."
   },
   {
     "id": "offline-demo",
-    "claim": "The sample demo reloads offline after its first visit.",
+    "claim": "The website sample demo reloads offline after its first visit.",
     "where": "README and demo documentation",
     "test": "npm run test:web -- --grep @claim:offline-demo",
     "sandbox": "A new browser context visits /demo/, waits for the worker, goes offline, reloads, and finds the demo heading."
@@ -25,7 +25,7 @@
     "claim": "Online visitors receive the current site shell after an update.",
     "where": "README",
     "test": "npm run test:web -- --grep @claim:site-updates",
-    "sandbox": "Browser regression reads the deployed worker source and asserts a versioned cache plus network-first document requests."
+    "sandbox": "Browser regression reads the shipped worker and asserts a versioned cache with network-first document requests."
   },
   {
     "id": "desktop-sample",
@@ -35,11 +35,25 @@
     "sandbox": "Browser-safe desktop UI opens ?demo=1, searches bundled sample labels, and asserts the Save result."
   },
   {
+    "id": "demo-mode-isolation",
+    "claim": "Desktop demo data stays separate and is discarded when Start for real is chosen.",
+    "where": "Desktop demo banner, README, and demo documentation",
+    "test": "npm run test:app-web -- --grep @claim:demo-mode-isolation",
+    "sandbox": "Fresh app context sets a real voice preference, changes the demo preference, exits demo, and asserts hidden demo chrome, cleared demo storage, and restored real preference."
+  },
+  {
     "id": "free-voice-speed",
     "claim": "Voice-speed control is free.",
     "where": "Desktop preferences and landing download section",
     "test": "npm run test:app-web -- --grep @claim:free-voice-speed",
-    "sandbox": "Browser-safe desktop UI changes the enabled voice-speed slider without a license."
+    "sandbox": "Browser-safe desktop UI changes the enabled voice-speed slider without a license or account."
+  },
+  {
+    "id": "desktop-shortcuts",
+    "claim": "The desktop sample supports shortcuts to read labels, find text, and describe likely buttons.",
+    "where": "Landing shortcut map and desktop buttons",
+    "test": "npm run test:app-web -- --grep @claim:desktop-shortcuts",
+    "sandbox": "Browser-safe desktop sample sends all three documented Alt+Shift shortcuts and asserts their observable focus or spoken-result state."
   },
   {
     "id": "blank-find",
@@ -54,5 +68,75 @@
     "where": "Desktop landmark list and landing FAQ",
     "test": "npm run test:app-web -- --grep @claim:ocr-uncertainty",
     "sandbox": "Browser-safe desktop UI opens the bundled sample and asserts the honest OCR warning while rejecting the old quality-estimate wording."
+  },
+  {
+    "id": "local-processing",
+    "claim": "The native OCR component has no HTTP client and returns landmarks rather than captured pixels.",
+    "where": "Landing privacy statements, privacy policy, and README",
+    "test": "npm run test:shared -- --grep @claim:local-processing",
+    "sandbox": "Static integration regression verifies bundled model loading, absence of HTTP client code and external CSP destinations, and landmark-only output."
+  },
+  {
+    "id": "selected-window",
+    "claim": "Capture requires the one visible window the person selects.",
+    "where": "Landing how-it-works section, desktop chooser, privacy policy, and README",
+    "test": "npm run test:shared -- --grep @claim:selected-window",
+    "sandbox": "Static integration regression asserts the UI refuses an empty selection and the native command selects only its explicit window id."
+  },
+  {
+    "id": "capture-discarded",
+    "claim": "Captured pixels are not included in the OCR result after recognition.",
+    "where": "Landing privacy section and privacy policy",
+    "test": "npm run test:shared -- --grep @claim:capture-discarded",
+    "sandbox": "Static integration regression confirms capture pixels are converted for local recognition and the serializable result contains landmarks only."
+  },
+  {
+    "id": "guidance-only",
+    "claim": "Lens guides but does not control another app.",
+    "where": "Landing, desktop copy, and terms",
+    "test": "npm run test:shared -- --grep @claim:guidance-only",
+    "sandbox": "Static integration regression locks the native invoke handler to listing and OCR analysis commands, without pointer, keyboard-control, or remote-control code."
+  },
+  {
+    "id": "no-account-required",
+    "claim": "All shipped wayfinding features work without an account or purchase.",
+    "where": "Landing, privacy policy, terms, and README",
+    "test": "npm run test:shared -- --grep @claim:no-account-required",
+    "sandbox": "Static integration regression verifies the public build has no sign-in, checkout, or license path."
+  },
+  {
+    "id": "release-metadata-cache",
+    "claim": "The landing page checks GitHub release metadata at most once per hour per browser.",
+    "where": "Privacy policy",
+    "test": "npm run test:web -- --grep @claim:release-metadata-cache",
+    "sandbox": "Browser intercepts the GitHub metadata API, reloads the landing page, and asserts one request plus a one-hour local cache."
+  },
+  {
+    "id": "release-metadata-fallback",
+    "claim": "When release metadata is unavailable, the landing page keeps a calm direct Release page link.",
+    "where": "Landing download area",
+    "test": "npm run test:web -- --grep @claim:release-metadata-fallback",
+    "sandbox": "Browser returns a 503 metadata response and asserts the publishing message, release-page URL, and zero console errors."
+  },
+  {
+    "id": "unknown-route-404",
+    "claim": "Unknown website addresses receive the designed 404 response instead of the home page.",
+    "where": "Static deployment configuration",
+    "test": "npm run test:shared -- --grep @claim:unknown-route-404",
+    "sandbox": "Static Web Apps configuration regression asserts no navigation fallback and the designed 404 response override with status 404."
+  },
+  {
+    "id": "release-assets",
+    "claim": "Each tagged release builds cross-platform desktop assets and records the exact source commit in latest.json.",
+    "where": "README and release workflow",
+    "test": "npm run test:shared -- --grep @claim:release-assets",
+    "sandbox": "Workflow regression asserts v* triggers, tag-to-source verification, platform staging, checksums, and commit-bearing manifest generation."
+  },
+  {
+    "id": "checksum-installers",
+    "claim": "The supplied installers verify SHA-256 before installation.",
+    "where": "README and landing install options",
+    "test": "npm run test:shared -- --grep @claim:checksum-installers",
+    "sandbox": "Static integration regression verifies checksum failure aborts before install in both shell and PowerShell installers."
   }
 ]

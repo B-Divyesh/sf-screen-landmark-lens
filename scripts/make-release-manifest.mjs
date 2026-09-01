@@ -3,9 +3,10 @@ import { readdir, readFile, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 
 const directory = process.argv[2] || "release-assets";
-const version = (process.env.RELEASE_TAG || "v0.1.0").replace(/^v/, "");
+const version = (process.env.RELEASE_TAG || "v0.1.1").replace(/^v/, "");
 const repository = process.env.GITHUB_REPOSITORY || "B-Divyesh/sf-screen-landmark-lens";
 const tag = process.env.RELEASE_TAG || `v${version}`;
+const commit = process.env.GITHUB_SHA || "local-build";
 const files = (await readdir(directory)).filter((name) => !["SHA256SUMS", "latest.json"].includes(name));
 const sums = [];
 
@@ -32,5 +33,5 @@ const platforms = Object.fromEntries(Object.entries(platformFiles).map(([platfor
 }));
 
 await writeFile(join(directory, "SHA256SUMS"), `${sums.map(({ file, hash }) => `${hash}  ${file}`).join("\n")}\n`);
-await writeFile(join(directory, "latest.json"), `${JSON.stringify({ version, platforms })}\n`);
+await writeFile(join(directory, "latest.json"), `${JSON.stringify({ version, commit, platforms })}\n`);
 console.log(`Created checksums and manifest for ${Object.keys(platforms).join(", ")}`);

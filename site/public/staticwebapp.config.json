@@ -1,5 +1,4 @@
 {
-  "navigationFallback": { "rewrite": "/index.html", "exclude": ["/assets/*", "/demo/*", "/privacy/*", "/terms/*", "/install.sh", "/install.ps1", "/sw.js", "/404.html"] },
   "globalHeaders": {
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "no-referrer",

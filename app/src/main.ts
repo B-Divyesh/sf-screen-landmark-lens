@@ -16,7 +16,20 @@ const list = $("#landmark-list") as HTMLOListElement;
 let analysis: Analysis | null = null;
 let demoMode = new URLSearchParams(location.search).get("demo") === "1";
 const storageKey = (name: string) => `${demoMode ? "demo:" : ""}lens:${name}`;
-let speechRate = Number(localStorage.getItem(storageKey("speech-rate")) || 1);
+const rateInput = $("#speech-rate") as HTMLInputElement;
+const rateOutput = $("#speech-rate-output");
+
+function savedSpeechRate() {
+  const value = Number(localStorage.getItem(storageKey("speech-rate")) || 1);
+  return Number.isFinite(value) && value >= 0.6 && value <= 1.6 ? value : 1;
+}
+
+let speechRate = savedSpeechRate();
+
+function showSpeechRate() {
+  rateInput.value = String(speechRate);
+  rateOutput.textContent = `${speechRate}×`;
+}
 
 const sampleAnalysis: Analysis = {
   windowTitle: "Sample Legacy App — Quarterly report",
@@ -60,6 +73,8 @@ function setDemoMode(enabled: boolean) {
 
 function loadSample() {
   setDemoMode(true);
+  speechRate = savedSpeechRate();
+  showSpeechRate();
   analysis = structuredClone(sampleAnalysis);
   renderLandmarks();
   [readButton, buttonsButton, findInput, findButton].forEach((element) => { element.disabled = false; });
@@ -170,7 +185,10 @@ $("#load-sample").addEventListener("click", loadSample);
 $("#reset-demo").addEventListener("click", loadSample);
 $("#start-real").addEventListener("click", () => {
   analysis = null;
+  localStorage.removeItem("demo:lens:speech-rate");
   setDemoMode(false);
+  speechRate = savedSpeechRate();
+  showSpeechRate();
   renderLandmarks();
   $("#scan-meta").textContent = "Waiting for a selected window.";
   void loadWindows();
@@ -191,10 +209,12 @@ document.addEventListener("keydown", (event) => {
   if (event.key.toLowerCase() === "b" && !buttonsButton.disabled) { event.preventDefault(); describeButtons(); }
   if (event.key.toLowerCase() === "f") { event.preventDefault(); findInput.focus(); }
 });
-const rateInput = $("#speech-rate") as HTMLInputElement;
-rateInput.value = String(speechRate);
-$("#speech-rate-output").textContent = `${speechRate}×`;
-rateInput.addEventListener("input", () => { speechRate = Number(rateInput.value); localStorage.setItem(storageKey("speech-rate"), String(speechRate)); $("#speech-rate-output").textContent = `${speechRate}×`; });
+showSpeechRate();
+rateInput.addEventListener("input", () => {
+  speechRate = Number(rateInput.value);
+  localStorage.setItem(storageKey("speech-rate"), String(speechRate));
+  showSpeechRate();
+});
 
 if (demoMode) loadSample();
 else void loadWindows();

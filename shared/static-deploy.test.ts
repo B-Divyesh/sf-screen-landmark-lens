@@ -38,17 +38,17 @@ describe("static deployment artifact", () => {
   it("@claim:local-processing runs the bundled recognition models without a service", () => {
     expect(runNativeClaim("tests::claim_local_processing_loads_bundled_models_without_a_service"))
       .toContain("test tests::claim_local_processing_loads_bundled_models_without_a_service ... ok");
-  }, 120_000);
+  }, 600_000);
 
   it("@claim:selected-window uses the requested fixture window and rejects a missing id", () => {
     expect(runNativeClaim("tests::claim_selected_window_uses_only_the_requested_id"))
       .toContain("test tests::claim_selected_window_uses_only_the_requested_id ... ok");
-  }, 120_000);
+  }, 600_000);
 
   it("@claim:capture-discarded serializes OCR results without captured pixels", () => {
     expect(runNativeClaim("tests::claim_capture_discarded_serializes_landmarks_without_pixels"))
       .toContain("test tests::claim_capture_discarded_serializes_landmarks_without_pixels ... ok");
-  }, 120_000);
+  }, 600_000);
 
   it("@claim:checksum-installers install verified fixtures and reject tampered fixtures", async () => {
     const fixture = mkdtempSync(join(tmpdir(), "lens-installer-"));

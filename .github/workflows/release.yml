@@ -114,11 +114,11 @@ jobs:
           try {
             $env:SLL_MANIFEST_URL = "http://127.0.0.1:8765/installer-fixture.json"
             $env:SLL_VERIFY_ONLY = "1"
-            & pwsh -File site/public/install.ps1
-            if ($LASTEXITCODE -ne 0) { throw "Valid checksum fixture was rejected" }
+            $valid = Start-Process pwsh -ArgumentList "-File", "site/public/install.ps1" -Wait -PassThru -NoNewWindow
+            if ($valid.ExitCode -ne 0) { throw "Valid checksum fixture was rejected" }
             Set-Content -Path staged/installer-fixture.msi -Value "tampered fixture"
-            & pwsh -File site/public/install.ps1
-            if ($LASTEXITCODE -eq 0) { throw "Tampered checksum fixture was accepted" }
+            $tampered = Start-Process pwsh -ArgumentList "-File", "site/public/install.ps1" -Wait -PassThru -NoNewWindow
+            if ($tampered.ExitCode -eq 0) { throw "Tampered checksum fixture was accepted" }
             '{"platform":"windows","validAccepted":true,"tamperedRejected":true}' | Set-Content "staged/windows-installer-verification.json"
           } finally {
             Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue

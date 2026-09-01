@@ -67,6 +67,11 @@ jobs:
           dmg="$(find src-tauri/target/${{ matrix.target }}/release/bundle -type f -name '*.dmg' -print -quit)"
           test -n "$dmg"
           cp "$dmg" "staged/Screen-Landmark-Lens_${version}_${{ matrix.key }}.dmg"
+          app="$(find src-tauri/target/${{ matrix.target }}/release/bundle -type d -name '*.app' -print -quit)"
+          test -d "$app"
+          details="$(codesign -dv --verbose=4 "$app" 2>&1 || true)"
+          if printf '%s' "$details" | grep -q '^Authority='; then echo "Unexpected publisher signature" >&2; exit 1; fi
+          printf '{"platform":"%s","publisherSigned":false}\n' "${{ matrix.key }}" > "staged/${{ matrix.key }}.signature.json"
       - name: Stage Linux bundles
         if: runner.os == 'Linux'
         shell: bash
@@ -79,6 +84,9 @@ jobs:
           done
           test -f "staged/Screen-Landmark-Lens_${version}_linux.AppImage"
           test -f "staged/Screen-Landmark-Lens_${version}_linux.deb"
+          test -f "staged/Screen-Landmark-Lens_${version}_linux.rpm"
+          if ar t "staged/Screen-Landmark-Lens_${version}_linux.deb" | grep -q '_gpgorigin'; then echo "Unexpected package signature" >&2; exit 1; fi
+          printf '{"platform":"linux","publisherSigned":false}\n' > staged/linux.signature.json
       - name: Stage Windows bundles
         if: runner.os == 'Windows'
         shell: pwsh
@@ -91,6 +99,29 @@ jobs:
           if (-not $msi -or -not $exe) { throw "Expected both MSI and NSIS installers" }
           Copy-Item $msi.FullName "staged/Screen-Landmark-Lens_${version}_windows.msi"
           Copy-Item $exe.FullName "staged/Screen-Landmark-Lens_${version}_windows-setup.exe"
+          $signature = Get-AuthenticodeSignature $msi.FullName
+          if ($signature.Status -ne "NotSigned") { throw "Unexpected publisher signature: $($signature.Status)" }
+          '{"platform":"windows","publisherSigned":false}' | Set-Content "staged/windows.signature.json"
+      - name: Exercise Windows checksum installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Set-Content -Path staged/installer-fixture.msi -Value "verified fixture"
+          $hash = (Get-FileHash staged/installer-fixture.msi -Algorithm SHA256).Hash.ToLowerInvariant()
+          @{ platforms = @{ windows = @{ url = "http://127.0.0.1:8765/installer-fixture.msi"; sha256 = $hash } } } | ConvertTo-Json -Depth 4 | Set-Content staged/installer-fixture.json
+          $server = Start-Process python -ArgumentList "-m", "http.server", "8765", "--directory", "staged" -PassThru
+          Start-Sleep -Seconds 2
+          try {
+            $env:SLL_MANIFEST_URL = "http://127.0.0.1:8765/installer-fixture.json"
+            $env:SLL_VERIFY_ONLY = "1"
+            & pwsh -File site/public/install.ps1
+            Set-Content -Path staged/installer-fixture.msi -Value "tampered fixture"
+            try { & pwsh -File site/public/install.ps1; throw "Tampered fixture was accepted" } catch { if ($_.Exception.Message -notmatch "Checksum mismatch") { throw } }
+            '{"platform":"windows","validAccepted":true,"tamperedRejected":true}' | Set-Content "staged/windows-installer-verification.json"
+          } finally {
+            Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue
+            Remove-Item staged/installer-fixture.msi, staged/installer-fixture.json
+          }
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.key }}
@@ -126,9 +157,9 @@ jobs:
           draft: false
           prerelease: false
           body: |
-            First public build of Screen Landmark Lens. All window captures and OCR stay on the device.
+            Screen Landmark Lens desktop packages for macOS, Windows, and Linux.
 
             The attached latest.json records the exact source commit used for this release.
 
-            These binaries are unsigned. macOS users should right-click the app and choose Open; Windows may show SmartScreen.
+            These packages have no publisher signature. On macOS, right-click the app and choose Open.
           files: release-assets/*

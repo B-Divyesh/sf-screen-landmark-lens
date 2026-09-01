@@ -1,5 +1,11 @@
 import "./style.css";
 
+const redirectingToDemo = location.pathname === "/" && new URLSearchParams(location.search).get("demo") === "1";
+if (redirectingToDemo) {
+  sessionStorage.setItem("lens:focus-route-heading", "1");
+  location.replace("/demo/?demo=1");
+}
+
 type ReleaseAsset = { name: string; browser_download_url: string };
 type Release = { tag_name: string; assets: ReleaseAsset[] };
 const releaseApi = "https://api.github.com/repos/B-Divyesh/sf-screen-landmark-lens/releases/latest";
@@ -124,4 +130,4 @@ function setupDemo() {
 }
 
 if (document.body.hasAttribute("data-demo-page")) setupDemo();
-else void resolveDownloads();
+else if (!redirectingToDemo) void resolveDownloads();

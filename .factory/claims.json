@@ -14,11 +14,25 @@
     "sandbox": "Fresh browser records every request while using /demo/ and accepts only the product origin."
   },
   {
+    "id": "website-demo-storage",
+    "claim": "The website demo does not save searches or sample changes.",
+    "where": "README and /demo/ banner",
+    "test": "npm run test:web -- --grep @claim:website-demo-storage",
+    "sandbox": "Fresh context changes the search, reloads, and confirms the default is restored with no user-data keys or cookies."
+  },
+  {
+    "id": "website-privacy",
+    "claim": "The website has no advertising cookies, behavioral analytics, or third-party scripts.",
+    "where": "Privacy policy",
+    "test": "npm run test:web -- --grep @claim:website-privacy",
+    "sandbox": "Fresh browser confirms an empty cookie jar, only same-origin script sources, and no analytics or tracker scripts."
+  },
+  {
     "id": "offline-demo",
     "claim": "The website sample demo reloads offline after its first visit.",
     "where": "README and demo documentation",
     "test": "npm run test:web -- --grep @claim:offline-demo",
-    "sandbox": "A new browser context visits /demo/, waits for the worker, goes offline, reloads, and finds the demo heading."
+    "sandbox": "A dedicated browser context visits /demo/, waits for the worker, goes offline, reloads, and finds the demo heading."
   },
   {
     "id": "site-updates",
@@ -32,111 +46,139 @@
     "claim": "The desktop app includes a sample project that finds Save without a capture.",
     "where": "Desktop first screen and README",
     "test": "npm run test:app-web -- --grep @claim:desktop-sample",
-    "sandbox": "Browser-safe desktop UI opens ?demo=1, searches bundled sample labels, and asserts the Save result."
+    "sandbox": "Fresh desktop interface opens ?demo=1, searches bundled sample labels, and asserts the Save result."
   },
   {
     "id": "demo-mode-isolation",
     "claim": "Desktop demo data stays separate and is discarded when Start for real is chosen.",
     "where": "Desktop demo banner, README, and demo documentation",
     "test": "npm run test:app-web -- --grep @claim:demo-mode-isolation",
-    "sandbox": "Fresh app context sets a real voice preference, changes the demo preference, exits demo, and asserts hidden demo chrome, cleared demo storage, and restored real preference."
+    "sandbox": "Fresh app context sets a real preference, changes the demo preference, exits, and confirms demo storage is cleared."
   },
   {
     "id": "free-voice-speed",
     "claim": "Voice-speed control is free.",
     "where": "Desktop preferences and landing download section",
     "test": "npm run test:app-web -- --grep @claim:free-voice-speed",
-    "sandbox": "Browser-safe desktop UI changes the enabled voice-speed slider without a license or account."
+    "sandbox": "Fresh desktop interface changes the enabled voice-speed slider without a license or account."
   },
   {
     "id": "desktop-shortcuts",
     "claim": "The desktop sample supports shortcuts to read labels, find text, and describe likely buttons.",
     "where": "Landing shortcut map and desktop buttons",
     "test": "npm run test:app-web -- --grep @claim:desktop-shortcuts",
-    "sandbox": "Browser-safe desktop sample sends all three documented Alt+Shift shortcuts and asserts their observable focus or spoken-result state."
+    "sandbox": "Fresh sample sends all three documented Alt+Shift shortcuts and asserts their result or focus state."
+  },
+  {
+    "id": "screen-reader-announcements",
+    "claim": "Screen-reader announcements accompany results.",
+    "where": "README and desktop live region",
+    "test": "npm run test:app-web -- --grep @claim:screen-reader-announcements",
+    "sandbox": "A recorded speech adapter and the polite live region both receive the Save direction."
   },
   {
     "id": "blank-find",
     "claim": "Empty Find requests explain what to do next.",
-    "where": "Desktop Find text state",
+    "where": "Desktop Find state",
     "test": "npm run test:app-web -- --grep @claim:blank-find",
-    "sandbox": "Bundled sample is opened and an empty Find submission is asserted to give the exact recovery instruction."
+    "sandbox": "Bundled sample submits an empty Find and asserts the exact recovery instruction."
   },
   {
     "id": "ocr-uncertainty",
     "claim": "OCR output is labeled as uncertain text, without a fabricated confidence percentage.",
-    "where": "Desktop landmark list and landing FAQ",
+    "where": "Desktop result list and landing FAQ",
     "test": "npm run test:app-web -- --grep @claim:ocr-uncertainty",
-    "sandbox": "Browser-safe desktop UI opens the bundled sample and asserts the honest OCR warning while rejecting the old quality-estimate wording."
+    "sandbox": "Fresh sample asserts the OCR warning and rejects the old quality-estimate wording."
   },
   {
     "id": "local-processing",
-    "claim": "The native OCR component has no HTTP client and returns landmarks rather than captured pixels.",
+    "claim": "Bundled recognition models process a fixture locally without a service.",
     "where": "Landing privacy statements, privacy policy, and README",
-    "test": "npm run test:shared -- --grep @claim:local-processing",
-    "sandbox": "Static integration regression verifies bundled model loading, absence of HTTP client code and external CSP destinations, and landmark-only output."
+    "test": "npm run test:shared -- -t @claim:local-processing",
+    "sandbox": "Vitest executes the native Rust test that loads both bundled models and analyzes an in-memory fixture."
   },
   {
     "id": "selected-window",
-    "claim": "Capture requires the one visible window the person selects.",
-    "where": "Landing how-it-works section, desktop chooser, privacy policy, and README",
-    "test": "npm run test:shared -- --grep @claim:selected-window",
-    "sandbox": "Static integration regression asserts the UI refuses an empty selection and the native command selects only its explicit window id."
+    "claim": "Capture uses the one visible window the person selects.",
+    "where": "Landing steps, desktop chooser, privacy policy, and README",
+    "test": "npm run test:shared -- -t @claim:selected-window",
+    "sandbox": "Native controlled-window test selects the requested id among two windows and rejects an absent id."
   },
   {
     "id": "capture-discarded",
-    "claim": "Captured pixels are not included in the OCR result after recognition.",
-    "where": "Landing privacy section and privacy policy",
-    "test": "npm run test:shared -- --grep @claim:capture-discarded",
-    "sandbox": "Static integration regression confirms capture pixels are converted for local recognition and the serializable result contains landmarks only."
+    "claim": "Captured pixels are absent from the result returned after recognition.",
+    "where": "Landing privacy section, privacy policy, and README",
+    "test": "npm run test:shared -- -t @claim:capture-discarded",
+    "sandbox": "Native result-boundary test serializes a fixture analysis and confirms labels are present while capture, pixels, and image bytes are absent."
   },
   {
     "id": "guidance-only",
-    "claim": "Lens guides but does not control another app.",
+    "claim": "Lens gives directions without controlling another app.",
     "where": "Landing, desktop copy, and terms",
-    "test": "npm run test:shared -- --grep @claim:guidance-only",
-    "sandbox": "Static integration regression locks the native invoke handler to listing and OCR analysis commands, without pointer, keyboard-control, or remote-control code."
+    "test": "npm run test:app-web -- --grep @claim:guidance-only",
+    "sandbox": "Fresh sample finds Cancel, changes only guidance state, keeps its URL, and makes no external request."
   },
   {
     "id": "no-account-required",
-    "claim": "All shipped wayfinding features work without an account or purchase.",
+    "claim": "All shipped label-finding features work without an account or purchase.",
     "where": "Landing, privacy policy, terms, and README",
-    "test": "npm run test:shared -- --grep @claim:no-account-required",
-    "sandbox": "Static integration regression verifies the public build has no sign-in, checkout, or license path."
+    "test": "npm run test:app-web -- --grep @claim:no-account-required",
+    "sandbox": "Fresh sample with no account state exercises read, likely-button, find, and voice-speed tools."
   },
   {
     "id": "release-metadata-cache",
     "claim": "The landing page checks GitHub release metadata at most once per hour per browser.",
     "where": "Privacy policy",
     "test": "npm run test:web -- --grep @claim:release-metadata-cache",
-    "sandbox": "Browser intercepts the GitHub metadata API, reloads the landing page, and asserts one request plus a one-hour local cache."
+    "sandbox": "Browser intercepts the GitHub API, reloads, and asserts one request plus a one-hour local cache."
   },
   {
     "id": "release-metadata-fallback",
-    "claim": "When release metadata is unavailable, the landing page keeps a calm direct Release page link.",
+    "claim": "When release metadata is unavailable, the landing page keeps a direct Release page link.",
     "where": "Landing download area",
     "test": "npm run test:web -- --grep @claim:release-metadata-fallback",
-    "sandbox": "Browser removes the shipped release metadata, returns an empty API result, and asserts the publishing message, release-page URL, and zero console errors."
+    "sandbox": "Browser removes bootstrap metadata, returns an empty API result, and asserts the fallback link and zero console errors."
   },
   {
     "id": "unknown-route-404",
-    "claim": "Unknown website addresses receive the designed 404 response instead of the home page.",
-    "where": "Static deployment configuration",
-    "test": "npm run test:shared -- --grep @claim:unknown-route-404",
-    "sandbox": "Static Web Apps configuration regression asserts no navigation fallback and the designed 404 response override with status 404."
+    "claim": "Unknown website addresses receive the designed 404 response.",
+    "where": "Static site routing",
+    "test": "npm run test:web -- --grep @claim:unknown-route-404",
+    "sandbox": "Browser requests an unknown document and asserts HTTP 404, route metadata, shared navigation, and shared footer."
   },
   {
     "id": "release-assets",
-    "claim": "Each tagged release builds cross-platform desktop assets and records the exact source commit in latest.json.",
-    "where": "README and release workflow",
-    "test": "npm run test:shared -- --grep @claim:release-assets",
-    "sandbox": "Workflow regression asserts v* triggers, tag-to-source verification, platform staging, checksums, and commit-bearing manifest generation."
+    "claim": "Release 0.1.5 provides macOS, Windows, and Linux packages tied to its source commit.",
+    "where": "Landing, README, and latest.json",
+    "test": "VERIFY_PUBLISHED_RELEASE=1 npm run test:shared -- -t @claim:release-assets",
+    "sandbox": "GitHub release API and published latest.json are compared with the clean checkout commit and required package names."
+  },
+  {
+    "id": "package-signatures",
+    "claim": "Version 0.1.5 packages have no publisher signature.",
+    "where": "Landing install note and README",
+    "test": "VERIFY_PUBLISHED_RELEASE=1 npm run test:shared -- -t @claim:package-signatures",
+    "sandbox": "The claim reads CI-produced Linux, macOS, and Windows signature reports attached to the published release."
   },
   {
     "id": "checksum-installers",
     "claim": "The supplied installers verify SHA-256 before installation.",
-    "where": "README and landing install options",
-    "test": "npm run test:shared -- --grep @claim:checksum-installers",
-    "sandbox": "Static integration regression verifies checksum failure aborts before install in both shell and PowerShell installers."
+    "where": "install.sh and install.ps1",
+    "test": "VERIFY_PUBLISHED_RELEASE=1 npm run test:shared -- -t @claim:checksum-installers",
+    "sandbox": "Shell installer runs locally against valid and tampered fixtures; the release supplies the equivalent Windows CI outcome report."
+  },
+  {
+    "id": "dependency-licenses",
+    "claim": "Recognition dependency licenses are recorded in THIRD_PARTY_NOTICES.md.",
+    "where": "README and THIRD_PARTY_NOTICES.md",
+    "test": "npm run test:shared -- -t @claim:dependency-licenses",
+    "sandbox": "Cargo metadata for locked ocrs and rten versions and licenses is compared with the notice table."
+  },
+  {
+    "id": "image-provenance",
+    "claim": "The shipped hero has a retained generation and review record.",
+    "where": "Footer, README, design record, and assets/src",
+    "test": "npm run test:shared -- -t @claim:image-provenance",
+    "sandbox": "The source image hash, model record, and no-text prompt are matched to the shipped provenance files."
   }
 ]

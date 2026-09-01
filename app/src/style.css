@@ -20,7 +20,7 @@ body { margin: 0; min-width: 320px; min-height: 100vh; background: radial-gradie
 button, input, select { font: inherit; }
 button, select, input, summary, a { -webkit-tap-highlight-color: transparent; }
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
-.skip-link { position: fixed; left: 16px; top: -80px; z-index: 99; padding: 12px 16px; background: var(--signal); color: #101827; font-weight: 800; }
+.skip-link { position: fixed; left: 16px; top: -80px; z-index: 99; min-height: 44px; padding: 13px 16px; display: inline-flex; align-items: center; background: var(--signal); color: #101827; font-weight: 800; }
 .skip-link:focus { top: 16px; }
 .app-header { min-height: 76px; padding: 16px clamp(20px, 4vw, 56px); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
 .wordmark { min-height: 44px; display: inline-flex; align-items: center; gap: 12px; color: inherit; text-decoration: none; font-weight: 760; letter-spacing: -.02em; }
@@ -57,7 +57,7 @@ button:active:not(:disabled), .link-button:active { transform: translateY(1px); 
 .secondary-button { padding: 10px 14px; border-color: #708098; background: transparent; color: var(--paper); }
 .signal-button { width: auto; min-width: 94px; margin: 0; }
 .link-button { text-decoration: none; }
-kbd { padding: 3px 6px; border: 1px solid currentColor; border-radius: 4px; font: 600 11px/1.4 ui-monospace, monospace; white-space: nowrap; }
+kbd { padding: 3px 6px; border: 1px solid currentColor; border-radius: 4px; font: 600 16px/1.4 ui-monospace, monospace; white-space: nowrap; }
 .permission-hint, .status-copy { color: var(--fog); font-size: 16px; line-height: 1.5; }
 .empty-state { min-height: 300px; display: grid; place-content: center; text-align: center; border: 1px dashed #59687e; background: #0c1422; }
 .empty-state[hidden] { display: none; }

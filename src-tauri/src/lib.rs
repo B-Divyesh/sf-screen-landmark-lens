@@ -6,6 +6,16 @@ use serde::Serialize;
 use tauri::{Manager, Runtime};
 use xcap::Window;
 
+fn select_by_id<T, F>(items: Vec<T>, requested_id: u32, id: F) -> Result<T, String>
+where
+    F: Fn(&T) -> Option<u32>,
+{
+    items
+        .into_iter()
+        .find(|candidate| id(candidate) == Some(requested_id))
+        .ok_or_else(|| "The selected window was not found or has closed.".to_string())
+}
+
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct WindowInfo {
@@ -134,10 +144,7 @@ fn analyze_window<R: Runtime>(
 ) -> Result<Analysis, String> {
     let started = Instant::now();
     let windows = Window::all().map_err(|error| format!("Window access failed: {error}"))?;
-    let window = windows
-        .into_iter()
-        .find(|candidate| candidate.id().ok() == Some(window_id))
-        .ok_or_else(|| "The selected window was not found or has closed.".to_string())?;
+    let window = select_by_id(windows, window_id, |candidate| candidate.id().ok())?;
     let title = window.title().unwrap_or_else(|_| "Selected window".into());
     let capture = window.capture_image().map_err(|error| {
         format!("Screen capture permission was denied or capture failed: {error}")
@@ -253,5 +260,76 @@ mod tests {
         let resources = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("resources");
         Model::load_file(resources.join("text-detection.rten")).expect("valid detection model");
         Model::load_file(resources.join("text-recognition.rten")).expect("valid recognition model");
+    }
+
+    #[test]
+    fn claim_selected_window_uses_only_the_requested_id() {
+        #[derive(Debug, PartialEq)]
+        struct FixtureWindow(u32, &'static str);
+        let selected = select_by_id(
+            vec![
+                FixtureWindow(7, "Payroll"),
+                FixtureWindow(42, "Quarterly report"),
+            ],
+            42,
+            |window| Some(window.0),
+        )
+        .expect("selected window exists");
+        assert_eq!(selected, FixtureWindow(42, "Quarterly report"));
+        assert!(
+            select_by_id(vec![FixtureWindow(7, "Payroll")], 42, |window| Some(
+                window.0
+            ))
+            .unwrap_err()
+            .contains("selected window")
+        );
+    }
+
+    #[test]
+    fn claim_capture_discarded_serializes_landmarks_without_pixels() {
+        let result = Analysis {
+            window_title: "Fixture".into(),
+            width: 640,
+            height: 480,
+            elapsed_ms: 12,
+            landmarks: vec![Landmark {
+                text: "Save".into(),
+                x: 500,
+                y: 400,
+                width: 70,
+                height: 30,
+                direction: "bottom right".into(),
+                likely_button: true,
+            }],
+        };
+        let json = serde_json::to_value(result).expect("analysis serializes");
+        assert_eq!(json["landmarks"][0]["text"], "Save");
+        assert!(json.get("capture").is_none());
+        assert!(json.get("pixels").is_none());
+        assert!(json.get("imageBytes").is_none());
+    }
+
+    #[test]
+    fn claim_local_processing_loads_bundled_models_without_a_service() {
+        let resources = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("resources");
+        let detection = Model::load_file(resources.join("text-detection.rten"))
+            .expect("bundled detection model loads locally");
+        let recognition = Model::load_file(resources.join("text-recognition.rten"))
+            .expect("bundled recognition model loads locally");
+        let engine = OcrEngine::new(OcrEngineParams {
+            detection_model: Some(detection),
+            recognition_model: Some(recognition),
+            ..Default::default()
+        })
+        .expect("local engine starts");
+        let pixels = vec![255_u8; 96 * 48 * 3];
+        let source = ImageSource::from_bytes(&pixels, (96, 48)).expect("fixture image is accepted");
+        let input = engine
+            .prepare_input(source)
+            .expect("fixture is prepared locally");
+        let words = engine
+            .detect_words(&input)
+            .expect("fixture is analyzed locally");
+        assert!(words.is_empty(), "blank fixture should have no OCR words");
     }
 }

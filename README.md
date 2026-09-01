@@ -1,21 +1,24 @@
 # Screen Landmark Lens
 
-Screen Landmark Lens is a local desktop wayfinding aid for blind and low-vision workers using remote desktops, legacy applications, and other software that exposes no useful accessibility metadata. Pick one visible window, capture it, hear its labels, find text, and get a plain directional cue such as “bottom right.”
+Screen Landmark Lens is a desktop aid for blind and low-vision workers. It finds controls in software that gives screen readers no useful labels.
 
-Lens does not upload captures, control the pointer, click controls, or replace a screen reader. OCR output is explicitly uncertain and is not medical or professional advice.
+Pick one visible window. Lens reads its visible labels and gives a direction such as “bottom right.”
+
+Lens does not upload captures, control the pointer, click controls, or replace a screen reader. Optical character recognition (OCR) output is marked as uncertain.
 
 Live site: <https://screen-landmark-lens.sociobot.in>
 
 ## What ships
 
 - Tauri 2 desktop app for macOS, Windows, and Linux
-- Cross-platform window enumeration and capture through `xcap`
-- Bundled `ocrs` detection and recognition models for offline OCR
+- Release builds for macOS, Windows, and Linux
+- Window picker that limits each capture to one selection
+- Includes the text-recognition models for offline OCR
 - Keyboard-first label reading (`Alt+Shift+L`), text finding (`Alt+Shift+F`), and likely-button descriptions (`Alt+Shift+B`)
-- Spoken feedback through the operating system’s Web Speech voice
+- Screen-reader announcements accompany every result
 - Bundled sample project: find Save, Print, Cancel, and a status label before capturing a real window
 - Free wayfinding and voice-speed preference controls; no account or purchase is required in this build
-- Static download site, privacy and terms pages, versioned service worker, and checksum-verifying installers
+- Static download site, privacy and terms pages, and a versioned service worker
 
 ## Install
 
@@ -29,7 +32,9 @@ curl -fsSL https://screen-landmark-lens.sociobot.in/install.sh | sh
 irm https://screen-landmark-lens.sociobot.in/install.ps1 | iex
 ```
 
-Version 0.1.4 builds are unsigned. On macOS, right-click the installed app and choose **Open** the first time. Windows may show a SmartScreen notice. Screen-capture permission is requested by the operating system when needed.
+Version 0.1.5 packages have no publisher signature. On macOS, right-click the installed app and choose **Open** the first time.
+
+The operating system asks for screen-capture permission when needed.
 
 ## Develop
 
@@ -46,11 +51,15 @@ npm run build        # dist/app and deployable dist/site
 npm run tauri build  # native bundle for the current host
 ```
 
-The factory’s static deploy uses the exact command `npm run build:site` and publishes `dist/site` (whose root contains `index.html`). Native binaries are built only in GitHub Actions from a `v*` tag. The workflow verifies that tag points to its checkout and records that exact commit in `latest.json` beside the platform assets and `SHA256SUMS`. In a CI environment, `CI=true CARGO_BUILD_JOBS=1 npm run tauri build -- --bundles deb` is supported.
+The static deploy runs `npm run build:site` and publishes `dist/site`. Native packages are built in GitHub Actions from a `v*` tag.
+
+The workflow confirms that the tag points to its checkout. It records that commit in `latest.json` beside the packages and `SHA256SUMS`.
 
 ## Demo and checks
 
-Open [`/demo/`](https://screen-landmark-lens.sociobot.in/demo/) for an isolated, one-click sample. The desktop app also has **Load sample project** on its first screen. The sample data is bundled, uses no real capture, and is discarded with **Start for real**. See [.factory/demo.md](.factory/demo.md) and [.factory/claims.json](.factory/claims.json) for exact claim coverage.
+Open [`?demo=1`](https://screen-landmark-lens.sociobot.in/?demo=1) for an isolated, one-click sample. The desktop app also has **Load sample project** on its first screen.
+
+The sample data is bundled and uses no real capture. **Start for real** discards sample changes. See [.factory/demo.md](.factory/demo.md) and [.factory/claims.json](.factory/claims.json) for exact checks.
 
 The service worker uses versioned caches and serves navigation requests from the network whenever online, so deployed fixes replace an older shell. Run the complete local suite with:
 
@@ -66,11 +75,17 @@ CARGO_BUILD_JOBS=1 cargo clippy --manifest-path src-tauri/Cargo.toml --all-targe
 
 ## Privacy
 
-Captured pixels exist in memory only during OCR and are dropped when analysis returns. Voice speed is stored locally. In demo mode, it uses a separate `demo:lens:speech-rate` key; **Start for real** clears that key and restores the regular preference. The website demo stores nothing. All shipped wayfinding features are free and need no account or purchase.
+Captured pixels exist in memory only during OCR. The app drops them when analysis returns. Voice speed is stored locally.
+
+Desktop demo mode uses a separate `demo:lens:speech-rate` key. **Start for real** clears that key and restores the regular preference.
+
+The website demo does not save your search or sample changes. Its service worker caches public pages for offline use. All shipped label-finding features are free and need no account or purchase.
 
 The landing page asks `api.github.com` for current release metadata at most once per hour in a browser. If metadata is unavailable, its download buttons keep a direct link to the Release page. The website privacy policy describes this request.
 
-The `ocrs` code and model project are MIT/Apache-2.0 licensed. The generated hero is original to this project; its prompt and review record are in `assets/src/`. See [.factory/design.md](.factory/design.md) for the visual system and [.factory/handoff.md](.factory/handoff.md) for verification and release notes.
+Dependency licenses are recorded in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Read the [image provenance record](.factory/design.md) for the shipped hero source and prompt.
+
+See [.factory/handoff.md](.factory/handoff.md) for verification and release notes.
 
 ## License
 

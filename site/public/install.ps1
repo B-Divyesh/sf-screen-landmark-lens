@@ -1,5 +1,5 @@
 $ErrorActionPreference = "Stop"
-$manifestUrl = "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/latest/download/latest.json"
+$manifestUrl = if ($env:SLL_MANIFEST_URL) { $env:SLL_MANIFEST_URL } else { "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/latest/download/latest.json" }
 $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) ("screen-landmark-lens-" + [guid]::NewGuid())
 New-Item -ItemType Directory -Path $tempDir | Out-Null
 try {
@@ -10,9 +10,13 @@ try {
   Invoke-WebRequest -Uri $asset.url -OutFile $installer
   $actual = (Get-FileHash -Path $installer -Algorithm SHA256).Hash.ToLowerInvariant()
   if ($actual -ne $asset.sha256.ToLowerInvariant()) { throw "Checksum mismatch. Nothing was installed." }
+  if ($env:SLL_VERIFY_ONLY -eq "1") {
+    Write-Output "Verified the SHA256 checksum. Verification-only mode installed nothing."
+    return
+  }
   Start-Process msiexec.exe -ArgumentList "/i `"$installer`"" -Wait
   Write-Output "Verified the SHA256 checksum and opened the Screen Landmark Lens installer."
-  Write-Output "This build is unsigned; Windows may display a SmartScreen notice."
+  Write-Output "This package has no publisher signature."
 } finally {
   Remove-Item -Recurse -Force $tempDir -ErrorAction SilentlyContinue
 }

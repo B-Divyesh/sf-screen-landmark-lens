@@ -1,11 +1,12 @@
 #!/bin/sh
 set -eu
 
-MANIFEST_URL="https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/latest/download/latest.json"
+MANIFEST_URL="${SLL_MANIFEST_URL:-https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/latest/download/latest.json}"
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT INT TERM
 
-case "$(uname -s)-$(uname -m)" in
+case "${SLL_PLATFORM_KEY:-$(uname -s)-$(uname -m)}" in
+  linux) KEY="linux" ;;
   Darwin-arm64) KEY="macos-arm64" ;;
   Darwin-x86_64) KEY="macos-x64" ;;
   Linux-*) KEY="linux" ;;
@@ -30,7 +31,7 @@ if [ "$(uname -s)" = "Darwin" ]; then
   hdiutil detach "$VOLUME" >/dev/null
   echo "Installed Screen Landmark Lens in /Applications. Because this build is unsigned, right-click it and choose Open the first time."
 else
-  INSTALL_DIR="${XDG_BIN_HOME:-$HOME/.local/bin}"
+  INSTALL_DIR="${SLL_INSTALL_DIR:-${XDG_BIN_HOME:-$HOME/.local/bin}}"
   mkdir -p "$INSTALL_DIR"
   cp "$ASSET" "$INSTALL_DIR/screen-landmark-lens.AppImage"
   chmod +x "$INSTALL_DIR/screen-landmark-lens.AppImage"

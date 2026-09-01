@@ -10,7 +10,7 @@ test("landing page has a clear, working download path", async ({ page }) => {
   await expect(page.locator("h1")).toHaveCount(1);
   await expect(page.locator("#platform-download")).toBeVisible();
   await expect(page.locator("#platform-download")).toHaveAttribute("href", /github\.com\/B-Divyesh/);
-  await expect(page.locator("#release-note")).toContainText("Version 0.1.4");
+  await expect(page.locator("#release-note")).toContainText("Version 0.1.5");
   await expect(page.locator("img[alt]")).toHaveCount(1);
   expect(errors).toEqual([]);
 });
@@ -77,7 +77,7 @@ test("a fresh visit avoids GitHub HTTP 403 console errors with the published rel
     return route.fulfill({ status: 403, contentType: "application/json", body: '{"message":"rate limit"}' });
   });
   await page.goto("/");
-  await expect(page.locator("#release-note")).toContainText("Version 0.1.4");
+  await expect(page.locator("#release-note")).toContainText("Version 0.1.5");
   expect(githubRequests).toBe(0);
   expect(errors).toEqual([]);
 });
@@ -107,6 +107,14 @@ test("@claim:demo-privacy demo makes no third-party requests", async ({ page }) 
   expect(requests.every((url) => new URL(url).origin === "http://127.0.0.1:4173")).toBe(true);
 });
 
+test("@claim:website-privacy site sets no cookies and loads no third-party scripts", async ({ page }) => {
+  await page.goto("/");
+  expect(await page.evaluate(() => document.cookie)).toBe("");
+  const scripts = await page.locator("script[src]").evaluateAll((elements) => elements.map((element) => new URL((element as HTMLScriptElement).src).origin));
+  expect(scripts.every((origin) => origin === "http://127.0.0.1:4173")).toBe(true);
+  await expect(page.locator('script[src*="analytics"], script[src*="tracker"]')).toHaveCount(0);
+});
+
 test("@claim:offline-demo demo reloads offline after its first visit", async ({ browser }) => {
   const context = await browser.newContext();
   const page = await context.newPage();
@@ -123,7 +131,7 @@ test("@claim:site-updates navigations use a versioned, network-first worker", as
   await page.goto("/");
   const worker = await page.request.get("/sw.js");
   const source = await worker.text();
-  expect(source).toContain('const CACHE = "landmark-lens-v2"');
+  expect(source).toContain('const CACHE = "landmark-lens-v3"');
   expect(source).toContain('if (event.request.mode === "navigate")');
   expect(source.indexOf("fetch(event.request)")).toBeLessThan(source.indexOf("caches.match(event.request).then((cached) => cached || fetch"));
 });
@@ -135,6 +143,79 @@ for (const path of ["/", "/demo/", "/privacy/", "/terms/"]) {
     expect(results.violations.filter((violation) => ["serious", "critical"].includes(violation.impact || ""))).toEqual([]);
   });
 }
+
+test("@claim:website-demo-storage demo does not persist searches or sample changes", async ({ browser }) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.goto("/?demo=1");
+  await expect(page).toHaveURL(/\/demo\/\?demo=1$/);
+  await page.locator("#demo-find-input").fill("Cancel");
+  await page.locator("#demo-find-form").press("Enter");
+  await page.reload();
+  await expect(page.locator("#demo-find-input")).toHaveValue("Save");
+  const stored = await page.evaluate(() => ({
+    local: Object.keys(localStorage),
+    session: Object.keys(sessionStorage).filter((key) => key !== "lens:focus-route-heading"),
+    cookies: document.cookie,
+  }));
+  expect(stored).toEqual({ local: [], session: [], cookies: "" });
+  await context.close();
+});
+
+test("@claim:unknown-route-404 unknown documents return the complete designed 404", async ({ page }) => {
+  const response = await page.goto("/missing-review-route");
+  expect(response?.status()).toBe(404);
+  await expect(page).toHaveTitle("Page not found — Screen Landmark Lens");
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /not found/i);
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /social-card\.webp$/);
+  await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute("href", "/apple-touch-icon.png");
+  await expect(page.locator("header nav a")).toHaveCount(3);
+  await expect(page.locator("footer")).toContainText("Built by Param Factory");
+});
+
+test("route navigation and Back move focus to the destination heading", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Try it with sample data" }).first().click();
+  await expect(page).toHaveURL(/\/demo\/\?demo=1$/);
+  await expect(page.locator("h1")).toBeFocused();
+  await page.getByRole("link", { name: "Start for real" }).click();
+  await expect(page).toHaveURL("http://127.0.0.1:4173/");
+  await expect(page.locator("h1")).toBeFocused();
+  await page.goBack();
+  await expect(page.locator("h1")).toBeFocused();
+});
+
+test("390px first screen includes the complete action and three facts", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile", "mobile geometry check");
+  await page.goto("/");
+  const required = [
+    page.getByRole("link", { name: "Try it with sample data" }).first(),
+    page.getByText("Captures stay on this device"),
+    page.getByText("Works offline after install"),
+    page.getByText("All tools in this build are free"),
+  ];
+  for (const locator of required) {
+    const box = await locator.boundingBox();
+    expect(box).not.toBeNull();
+    expect((box?.y || 0) + (box?.height || 0)).toBeLessThanOrEqual(844);
+  }
+  await page.screenshot({ path: ".factory/evidence/polish-1-mobile-first-screen.png", fullPage: false });
+});
+
+test("visible content text is at least 16px and every interactive target is at least 44px", async ({ page }) => {
+  await page.goto("/");
+  await page.keyboard.press("Tab");
+  const smallText = await page.locator("body *:visible").evaluateAll((elements) => elements
+    .filter((element) => element.childElementCount === 0 && (element.textContent || "").trim())
+    .map((element) => ({ text: (element.textContent || "").trim(), size: Number.parseFloat(getComputedStyle(element).fontSize) }))
+    .filter((item) => item.size < 16));
+  expect(smallText).toEqual([]);
+  for (const element of await page.locator("a:visible, button:visible, summary:visible").all()) {
+    const box = await element.boundingBox();
+    expect(Math.max(box?.width || 0, box?.height || 0)).toBeGreaterThanOrEqual(44);
+    expect(box?.height || 0).toBeGreaterThanOrEqual(44);
+  }
+});
 
 for (const path of ["/", "/demo/", "/privacy/", "/terms/"]) {
   test(`${path} has no serious light-theme accessibility violations`, async ({ page }) => {

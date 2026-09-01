@@ -99,3 +99,82 @@ test("desktop legal and home links meet the 44px touch-target baseline", async (
     expect(box?.height).toBeGreaterThanOrEqual(44);
   }
 });
+
+test("@claim:screen-reader-announcements sends result text to the speech and live-region adapters", async ({ page }) => {
+  await page.addInitScript(() => {
+    const spoken: string[] = [];
+    Object.defineProperty(window, "__spoken", { value: spoken });
+    Object.defineProperty(window, "SpeechSynthesisUtterance", {
+      configurable: true,
+      value: class { text: string; rate = 1; constructor(text: string) { this.text = text; } },
+    });
+    Object.defineProperty(window, "speechSynthesis", {
+      configurable: true,
+      value: { cancel() {}, speak(utterance: { text: string }) { spoken.push(utterance.text); } },
+    });
+  });
+  await page.goto("/?demo=1");
+  await page.locator("#find-input").fill("Save");
+  await page.locator("#find-form").press("Enter");
+  await expect(page.locator("#announcer")).toContainText("Save");
+  const spoken = await page.evaluate(() => (window as unknown as { __spoken: string[] }).__spoken);
+  expect(spoken.some((message) => message.includes("Save") && message.includes("bottom right"))).toBe(true);
+});
+
+test("@claim:guidance-only finding a label changes guidance without invoking control actions", async ({ page }) => {
+  const requests: string[] = [];
+  page.on("request", (request) => requests.push(request.url()));
+  await page.goto("/?demo=1");
+  const initialUrl = page.url();
+  await page.locator("#find-input").fill("Cancel");
+  await page.locator("#find-form").press("Enter");
+  await expect(page.locator("#find-result")).toContainText("bottom right");
+  expect(page.url()).toBe(initialUrl);
+  expect(requests.every((url) => new URL(url).origin === "http://127.0.0.1:5173")).toBe(true);
+});
+
+test("@claim:no-account-required completes every sample tool with empty account state", async ({ page }) => {
+  await page.goto("/?demo=1");
+  expect(await page.evaluate(() => Object.keys(localStorage).filter((key) => /account|license|auth/i.test(key)))).toEqual([]);
+  await page.keyboard.press("Alt+Shift+L");
+  await expect(page.locator("#announcer")).toContainText("visible labels");
+  await page.keyboard.press("Alt+Shift+B");
+  await expect(page.locator("#find-result")).toContainText("likely buttons");
+  await page.locator("#find-input").fill("Print");
+  await page.locator("#find-form").press("Enter");
+  await expect(page.locator("#find-result")).toContainText("bottom center");
+  await page.locator("#speech-rate").fill("1.3");
+  await expect(page.locator("#speech-rate-output")).toHaveText("1.3×");
+  await expect(page.locator("body")).not.toContainText(/sign in|buy|checkout/i);
+});
+
+test("five scripted label-finding tasks complete by keyboard with spoken directions", async ({ page }) => {
+  await page.goto("/?demo=1");
+  const tasks = [
+    ["Quarterly report", "top left"],
+    ["Status", "middle center"],
+    ["Print", "bottom center"],
+    ["Save", "bottom right"],
+    ["Cancel", "bottom right"],
+  ];
+  for (const [query, direction] of tasks) {
+    await page.locator("#find-input").fill(query);
+    await page.locator("#find-form").press("Enter");
+    await expect(page.locator("#find-result")).toContainText(direction);
+  }
+  await page.screenshot({ path: ".factory/evidence/polish-1-five-task-trial.png", fullPage: true });
+});
+
+test("desktop app content uses 16px text and 44px interaction targets", async ({ page }) => {
+  await page.goto("/?demo=1");
+  await page.keyboard.press("Tab");
+  const smallText = await page.locator("body *:visible").evaluateAll((elements) => elements
+    .filter((element) => element.childElementCount === 0 && (element.textContent || "").trim())
+    .map((element) => ({ text: (element.textContent || "").trim(), size: Number.parseFloat(getComputedStyle(element).fontSize) }))
+    .filter((item) => item.size < 16));
+  expect(smallText).toEqual([]);
+  for (const element of await page.locator("a:visible, button:visible, select:visible, input:visible").all()) {
+    const box = await element.boundingBox();
+    expect(box?.height || 0).toBeGreaterThanOrEqual(44);
+  }
+});

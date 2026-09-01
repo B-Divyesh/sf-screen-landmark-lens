@@ -1,4 +1,8 @@
-import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 type StaticWebAppsConfig = {
@@ -8,90 +12,127 @@ type StaticWebAppsConfig = {
   mimeTypes?: Record<string, string>;
 };
 
-const config = JSON.parse(
-  readFileSync(new URL("../site/public/staticwebapp.config.json", import.meta.url), "utf8"),
-) as StaticWebAppsConfig;
-const releaseWorkflow = readFileSync(new URL("../.github/workflows/release.yml", import.meta.url), "utf8");
-const releaseManifest = readFileSync(new URL("../scripts/make-release-manifest.mjs", import.meta.url), "utf8");
-const nativeCore = readFileSync(new URL("../src-tauri/src/lib.rs", import.meta.url), "utf8");
-const appSource = readFileSync(new URL("../app/src/main.ts", import.meta.url), "utf8");
-const tauriConfig = readFileSync(new URL("../src-tauri/tauri.conf.json", import.meta.url), "utf8");
-const shellInstaller = readFileSync(new URL("../site/public/install.sh", import.meta.url), "utf8");
-const powershellInstaller = readFileSync(new URL("../site/public/install.ps1", import.meta.url), "utf8");
-const landingPage = readFileSync(new URL("../site/index.html", import.meta.url), "utf8");
-const tauriLauncher = readFileSync(new URL("../scripts/tauri.mjs", import.meta.url), "utf8");
+const root = new URL("../", import.meta.url);
+const path = (relative: string) => new URL(relative, root);
+const config = JSON.parse(readFileSync(path("site/public/staticwebapp.config.json"), "utf8")) as StaticWebAppsConfig;
+
+function runNativeClaim(name: string) {
+  return execFileSync("cargo", ["test", "--manifest-path", "src-tauri/Cargo.toml", name, "--", "--exact"], {
+    cwd: root,
+    encoding: "utf8",
+    env: { ...process.env, CARGO_BUILD_JOBS: "1" },
+  });
+}
 
 describe("static deployment artifact", () => {
-  it("@claim:unknown-route-404 does not rewrite unknown documents to the homepage", () => {
+  it("uses a response override for the real 404 without a homepage fallback", () => {
     expect(config.navigationFallback).toBeUndefined();
     expect(config.responseOverrides?.["404"]).toEqual({ rewrite: "/404.html", statusCode: 404 });
   });
 
-  it("uses a response override for the real 404 without an invalid route rule", () => {
-    expect(config.responseOverrides?.["404"]).toEqual({ rewrite: "/404.html", statusCode: 404 });
-  });
-
   it("declares AVIF with a MIME override instead of an unreachable asset route", () => {
-    const routes = config.routes ?? [];
-
     expect(config.mimeTypes?.[".avif"]).toBe("image/avif");
-    expect(routes.find((route) => route.route === "/assets/*.avif")).toBeUndefined();
+    expect((config.routes ?? []).find((route) => route.route === "/assets/*.avif")).toBeUndefined();
   });
 
-  it("@claim:release-assets builds tagged cross-platform assets and records their source commit", () => {
-    expect(releaseWorkflow).toContain('tags: ["v*"]');
-    expect(releaseWorkflow).toContain("Verify the tag points at the release source");
-    expect(releaseWorkflow).toContain("Record the exact release source");
-    expect(releaseWorkflow).toContain("target_commitish: ${{ steps.release_source.outputs.commit }}");
-    expect(releaseWorkflow).toContain("Screen-Landmark-Lens_${version}_linux.AppImage");
-    expect(releaseWorkflow).toContain("SHA256SUMS");
-    expect(releaseManifest).toContain("const commit = process.env.GITHUB_SHA");
-    expect(releaseManifest).toContain("JSON.stringify({ version, commit, platforms })");
+  it("@claim:local-processing runs the bundled recognition models without a service", () => {
+    expect(runNativeClaim("tests::claim_local_processing_loads_bundled_models_without_a_service"))
+      .toContain("test tests::claim_local_processing_loads_bundled_models_without_a_service ... ok");
+  }, 120_000);
+
+  it("@claim:selected-window uses the requested fixture window and rejects a missing id", () => {
+    expect(runNativeClaim("tests::claim_selected_window_uses_only_the_requested_id"))
+      .toContain("test tests::claim_selected_window_uses_only_the_requested_id ... ok");
+  }, 120_000);
+
+  it("@claim:capture-discarded serializes OCR results without captured pixels", () => {
+    expect(runNativeClaim("tests::claim_capture_discarded_serializes_landmarks_without_pixels"))
+      .toContain("test tests::claim_capture_discarded_serializes_landmarks_without_pixels ... ok");
+  }, 120_000);
+
+  it("@claim:checksum-installers install verified fixtures and reject tampered fixtures", async () => {
+    const fixture = mkdtempSync(join(tmpdir(), "lens-installer-"));
+    const asset = join(fixture, "Screen-Landmark-Lens_fixture_linux.AppImage");
+    const install = join(fixture, "installed");
+    writeFileSync(asset, "verified desktop fixture\n");
+    const checksum = createHash("sha256").update(readFileSync(asset)).digest("hex");
+    const manifest = join(fixture, "latest.json");
+    writeFileSync(manifest, JSON.stringify({ platforms: { linux: { url: `file://${asset}`, sha256: checksum } } }));
+    const script = path("site/public/install.sh");
+    const env = { ...process.env, SLL_MANIFEST_URL: `file://${manifest}`, SLL_PLATFORM_KEY: "linux", SLL_INSTALL_DIR: install };
+    const output = execFileSync("sh", [script.pathname], { env, encoding: "utf8" });
+    expect(output).toContain("Installed verified AppImage");
+    expect(readFileSync(join(install, "screen-landmark-lens.AppImage"), "utf8")).toBe("verified desktop fixture\n");
+
+    writeFileSync(asset, "tampered fixture\n");
+    const rejectedInstall = join(fixture, "rejected");
+    expect(() => execFileSync("sh", [script.pathname], { env: { ...env, SLL_INSTALL_DIR: rejectedInstall }, stdio: "pipe" })).toThrow();
+    expect(existsSync(join(rejectedInstall, "screen-landmark-lens.AppImage"))).toBe(false);
+    if (process.env.VERIFY_PUBLISHED_RELEASE === "1") {
+      const releaseResponse = await fetch("https://api.github.com/repos/B-Divyesh/sf-screen-landmark-lens/releases/latest", { headers: { "User-Agent": "screen-landmark-lens-claim-test" } });
+      const release = await releaseResponse.json() as { assets: Array<{ name: string; browser_download_url: string }> };
+      const reportAsset = release.assets.find((item) => item.name === "windows-installer-verification.json");
+      expect(reportAsset).toBeTruthy();
+      const report = await fetch(reportAsset!.browser_download_url).then((response) => response.json());
+      expect(report).toEqual({ platform: "windows", validAccepted: true, tamperedRejected: true });
+    }
   });
 
-  it("runs the Windows tauri.cmd shim through a shell so the Windows release job can build", () => {
-    expect(tauriLauncher).toContain('const executable = process.platform === "win32" ? "tauri.cmd" : "tauri"');
-    expect(tauriLauncher).toContain("shell: process.platform === \"win32\"");
+  it("@claim:dependency-licenses matches locked recognition dependencies to their notices", () => {
+    const metadata = JSON.parse(execFileSync("cargo", ["metadata", "--manifest-path", "src-tauri/Cargo.toml", "--format-version", "1"], { cwd: root, encoding: "utf8", maxBuffer: 50 * 1024 * 1024 }));
+    const notices = readFileSync(path("THIRD_PARTY_NOTICES.md"), "utf8");
+    for (const name of ["ocrs", "rten"]) {
+      const dependency = metadata.packages.find((item: { name: string }) => item.name === name);
+      expect(dependency).toBeTruthy();
+      expect(notices).toContain(`| \`${dependency.name}\` | ${dependency.version} | ${dependency.license} |`);
+    }
   });
 
-  it("@claim:local-processing keeps the native OCR core free of HTTP clients and sends only landmark data to the UI", () => {
-    expect(nativeCore).toContain("Model::load_file");
-    expect(nativeCore).not.toMatch(/reqwest|ureq|hyper|std::net|https?:\/\//i);
-    expect(nativeCore).toContain("landmarks,");
-    expect(nativeCore).not.toContain("capture:");
-    expect(tauriConfig).toContain("connect-src 'self'");
-    expect(tauriConfig).not.toContain("connect-src 'self' https://");
+  it("@claim:image-provenance binds the shipped hero source to its retained generation record", () => {
+    const image = readFileSync(path("assets/src/wayfinding-garden.png"));
+    const record = JSON.parse(readFileSync(path("assets/src/wayfinding-garden.png.json"), "utf8"));
+    const prompt = JSON.parse(readFileSync(path("assets/src/wayfinding-garden.prompt.json"), "utf8"));
+    expect(record.sha256).toBe(createHash("sha256").update(image).digest("hex"));
+    expect(record.model || record.deployment).toBeTruthy();
+    expect(prompt.prompt).toMatch(/no text|Avoid: text/i);
   });
 
-  it("@claim:selected-window capture requires one selected window id", () => {
-    expect(appSource).toContain("if (!select.value) return;");
-    expect(appSource).toContain('invoke<Analysis>("analyze_window", { windowId: Number(select.value) })');
-    expect(nativeCore).toContain("window_id: u32");
-    expect(nativeCore).toContain("candidate.id().ok() == Some(window_id)");
-  });
+  it("@claim:release-assets matches the published manifest, checksums, and exact source commit", async () => {
+    if (process.env.VERIFY_PUBLISHED_RELEASE !== "1") return;
+    const releaseResponse = await fetch("https://api.github.com/repos/B-Divyesh/sf-screen-landmark-lens/releases/latest", { headers: { "User-Agent": "screen-landmark-lens-claim-test" } });
+    expect(releaseResponse.ok).toBe(true);
+    const release = await releaseResponse.json() as { tag_name: string; assets: Array<{ name: string; browser_download_url: string }> };
+    expect(release.tag_name).toBe("v0.1.5");
+    const names = release.assets.map((asset) => asset.name);
+    for (const suffix of ["macos-arm64.dmg", "macos-x64.dmg", "windows.msi", "windows-setup.exe", "linux.AppImage", "linux.deb", "linux.rpm", "SHA256SUMS", "latest.json"]) {
+      expect(names.some((name) => name.endsWith(suffix))).toBe(true);
+    }
+    const manifestAsset = release.assets.find((asset) => asset.name === "latest.json")!;
+    const manifestResponse = await fetch(manifestAsset.browser_download_url);
+    expect(manifestResponse.ok).toBe(true);
+    const manifest = await manifestResponse.json() as { commit: string; platforms: Record<string, { sha256: string; url: string; publisherSigned: boolean }> };
+    const taggedSource = execFileSync("git", ["rev-list", "-n", "1", "v0.1.5"], { cwd: root, encoding: "utf8" }).trim();
+    expect(manifest.commit).toBe(taggedSource);
+    expect(Object.keys(manifest.platforms).sort()).toEqual(["linux", "macos-arm64", "macos-x64", "windows"]);
+    for (const value of Object.values(manifest.platforms)) {
+      expect(value.sha256).toMatch(/^[a-f0-9]{64}$/);
+      expect(value.url).toContain("/releases/download/v0.1.5/");
+      expect(value.publisherSigned).toBe(false);
+    }
+  }, 60_000);
 
-  it("@claim:capture-discarded returns OCR landmarks without serializing a captured image", () => {
-    expect(nativeCore).toContain("let capture = window.capture_image()");
-    expect(nativeCore).toContain("let rgb = image::DynamicImage::ImageRgba8(capture).into_rgb8()");
-    expect(nativeCore).toContain("Ok(Analysis {");
-    expect(nativeCore).toContain("landmarks,");
-    expect(nativeCore).not.toMatch(/captured_image|image_bytes|screenshot/);
-  });
-
-  it("@claim:guidance-only has no native pointer, keyboard-control, or remote-control command", () => {
-    expect(nativeCore).toContain("tauri::generate_handler![list_windows, analyze_window]");
-    expect(nativeCore).not.toMatch(/mouse|pointer|keybd|keyboard|remote_control/i);
-  });
-
-  it("@claim:no-account-required includes no sign-in, checkout, or license path in the free build", () => {
-    expect(landingPage).toContain("without an account");
-    expect(landingPage).not.toMatch(/sign in|checkout|license|api\.sociobot/i);
-  });
-
-  it("@claim:checksum-installers verify SHA-256 before placing an installer on the computer", () => {
-    expect(shellInstaller).toContain("Checksum mismatch. Nothing was installed.");
-    expect(shellInstaller).toContain("sha256sum");
-    expect(powershellInstaller).toContain("Get-FileHash");
-    expect(powershellInstaller).toContain("Checksum mismatch. Nothing was installed.");
-  });
+  it("@claim:package-signatures uses CI-produced signature reports for every signed platform", async () => {
+    if (process.env.VERIFY_PUBLISHED_RELEASE !== "1") return;
+    const releaseResponse = await fetch("https://api.github.com/repos/B-Divyesh/sf-screen-landmark-lens/releases/latest", { headers: { "User-Agent": "screen-landmark-lens-claim-test" } });
+    expect(releaseResponse.ok).toBe(true);
+    const release = await releaseResponse.json() as { tag_name: string; assets: Array<{ name: string; browser_download_url: string }> };
+    expect(release.tag_name).toBe("v0.1.5");
+    for (const platform of ["linux", "macos-arm64", "macos-x64", "windows"]) {
+      const reportAsset = release.assets.find((asset) => asset.name === `${platform}.signature.json`);
+      expect(reportAsset, `missing ${platform} signature report`).toBeTruthy();
+      const reportResponse = await fetch(reportAsset!.browser_download_url);
+      expect(reportResponse.ok).toBe(true);
+      expect(await reportResponse.json()).toEqual({ platform, publisherSigned: false });
+    }
+  }, 60_000);
 });

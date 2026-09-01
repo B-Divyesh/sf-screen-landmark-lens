@@ -1,6 +1,6 @@
 {
   "name": "screen-landmark-lens",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,7 +10,9 @@
     "build:app": "vite build --config vite.app.config.ts",
     "build:site": "vite build --config vite.site.config.ts",
     "build": "npm run build:app && npm run build:site",
-    "test": "tsc --noEmit && vitest run shared && cargo test --manifest-path src-tauri/Cargo.toml",
+    "test": "tsc --noEmit && npm run test:copy && vitest run shared && cargo test --manifest-path src-tauri/Cargo.toml",
+    "audit:copy": "node scripts/copy-audit.mjs --write",
+    "test:copy": "node scripts/copy-audit.mjs",
     "test:shared": "vitest run shared",
     "test:web": "playwright test",
     "test:app-web": "playwright test --config playwright.app.config.ts"

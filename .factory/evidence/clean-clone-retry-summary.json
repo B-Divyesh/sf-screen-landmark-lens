@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-09-01T23:36:00Z",
+  "commit": "9085ecdbaa62d0dd90008017b0c2495387f19787",
+  "clone": "/tmp/sll-polish-retry.OcJDJu/repo",
+  "claimsPassed": 26,
+  "claimsFailed": 0,
+  "fullSuite": {
+    "npmTest": "14 Vitest and 7 Rust tests passed without worker errors",
+    "siteBrowser": "45 passed, 1 expected desktop skip for mobile geometry",
+    "appBrowser": "28 passed",
+    "build": "dist/app and dist/site produced",
+    "audit": "0 production vulnerabilities"
+  },
+  "nativeBuild": {
+    "target": "/work/.cache/screen-landmark-lens-cargo-target",
+    "sharedAcrossCloneAndClaimCommands": true,
+    "firstCleanCloneNativeClaimSeconds": 34,
+    "nextNativeClaimSeconds": [3, 2],
+    "cleanedAfterVerification": true
+  }
+}

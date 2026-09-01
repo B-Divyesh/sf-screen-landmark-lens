@@ -6,6 +6,8 @@ Release candidate 0.1.5 repairs all 32 findings from `.factory/review-1.md`. The
 
 The existing midnight paper-garden identity remains intact. The repair changes copy, evidence, responsive order, focus behavior, route completeness, and release verification without changing the Tauri desktop-app artifact class.
 
+Retry 1 also fixed the native-claim runner itself. Cargo subprocesses now run asynchronously, and `npm test` plus every individual native claim share one target directory. This prevents the prior Vitest heartbeat timeout and repeated multi-gigabyte compilation on the disk-guard image.
+
 ## What changed
 
 - Added the one-click `/?demo=1` entry, persistent sample banner, reset, exit, and separate desktop demo preference.
@@ -19,6 +21,7 @@ The existing midnight paper-garden identity remains intact. The repair changes c
 - Added CI-produced publisher-signature reports, release-asset/commit checks, dependency notices, and hashed image provenance.
 - Added a generated copy audit that fails when the landing page or README changes.
 - Added a five-task keyboard/speech-output trial. The evidence honestly states that the worker had no human participant.
+- Added `npm run verify:live` for repeatable cold route, metadata, mobile, demo, storage, focus, offline, link, and axe checks.
 
 ## Verification
 
@@ -56,6 +59,15 @@ Post-release clean-clone verification used `/tmp/sll-final-clean.7LXTDH/repo`. I
 - Full clean-clone `npm run build`: `dist/app` and `dist/site` produced.
 - Full clean-clone `npm audit --omit=dev`: zero vulnerabilities.
 
+Retry 1 clean-clone verification used `/tmp/sll-polish-retry.OcJDJu/repo` at repair commit `9085ecd`.
+
+- All 26 claim commands passed independently; `.factory/evidence/clean-clone-claims.tsv` records every command.
+- `npm test`: 14/14 Vitest and 7/7 Rust tests passed with no worker timeout.
+- `npm run test:web`: 45 passed and one expected desktop skip for the mobile-only geometry check.
+- `npm run test:app-web`: 28/28 passed.
+- `npm run build`: both deployable outputs produced; `npm audit --omit=dev` found zero vulnerabilities.
+- One shared Cargo target served the full run. The first clean-clone native claim took 34 seconds; the next two took 3 and 2 seconds. The temporary clone and target were removed afterward.
+
 ## Evidence
 
 - Mobile first screen: `.factory/evidence/polish-1-mobile-first-screen.png`
@@ -65,6 +77,7 @@ Post-release clean-clone verification used `/tmp/sll-final-clean.7LXTDH/repo`. I
 - Finding map: `.factory/polish-1.md`
 - Accessibility trial interpretation: `.factory/pilot-evidence.md`
 - Clean-clone claim ledger: `.factory/evidence/clean-clone-claims.tsv`
+- Retry clean-clone summary: `.factory/evidence/clean-clone-retry-summary.json`
 - Live browser, axe, offline, routing, and release checks: `.factory/evidence/live/`
 
 ## Deployment and release
@@ -77,15 +90,18 @@ Post-release clean-clone verification used `/tmp/sll-final-clean.7LXTDH/repo`. I
 - Live URL: <https://screen-landmark-lens.sociobot.in>
 - Release URL: <https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/tag/v0.1.5>
 - Deployment target: Azure Static Web App `sf-screen-landmark-lens`, production environment, from `dist/site`.
+- Retry deployment ID: `2e45e0d0-5da5-4ed0-8881-29e577c8a769`, deployed from the verified `9085ecd` workspace.
 - Published assets: macOS arm64/x64 DMGs, Windows MSI/NSIS, Linux AppImage/DEB/RPM, `latest.json`, `SHA256SUMS`, four signature reports, and the Windows installer verification report.
 - Independent download check: the 14,831,824-byte Linux DEB matched `SHA256SUMS`, SHA-256 `3d1eee1f222cf8f0edfdbeb74ef20d8d12f3394a4fe2008cca3f8ad17ea2a347`.
-- Factory `verify-url.sh`: HTTP 200, 822ms network-idle load, no console errors, one H1, `lang=en`, main landmark, no missing alt text, and no unlabeled buttons.
+- Factory `verify-url.sh`: HTTP 200, 948ms network-idle load, no console errors, one H1, `lang=en`, main landmark, no missing alt text, and no unlabeled buttons.
 - Axe WCAG A/AA/2.1 AA: zero violations on home, demo, privacy, terms, and the styled 404.
 - Lighthouse mobile: 100 performance, 100 accessibility, 100 best practices, 100 SEO; LCP 978ms; CLS 0.0078.
 - Cold 390×844 check: both actions and all three facts end by y=582.34; no visible text below 16px; no target below 44px.
 - Cold demo check: `/?demo=1` redirects to `/demo/?demo=1`; banner, Reset demo, Start for real, sample result, isolated storage, and offline reload all passed.
 - Cold routing check: demo, home, and Back focus the destination H1; legal routes return 200; the styled unknown route returns 404.
 - Cold release check: the Linux button points to the v0.1.5 AppImage; every internal link returned 200; ordinary routes logged no console errors.
+- Retry Lighthouse mobile: 100 performance, 100 accessibility, 100 best practices, 100 SEO; LCP 996ms, TBT 6ms, CLS 0.0078.
+- Retry package check: the 14,831,824-byte v0.1.5 Linux DEB matched published SHA-256 `3d1eee1f222cf8f0edfdbeb74ef20d8d12f3394a4fe2008cca3f8ad17ea2a347`.
 
 The live screenshots and machine-readable reports are under `.factory/evidence/live/`.
 

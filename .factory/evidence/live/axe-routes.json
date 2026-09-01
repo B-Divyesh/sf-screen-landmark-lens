@@ -1,74 +1,55 @@
-[
-  {
-    "route": "/",
-    "status": 200,
-    "errors": [],
-    "basics": {
-      "title": "Screen Landmark Lens — Find visible controls offline",
-      "lang": "en",
-      "h1": 1,
-      "main": true,
-      "missingAlt": 0
+{
+  "checkedAt": "2026-09-01T23:43:29.382Z",
+  "results": [
+    {
+      "route": "/",
+      "colorScheme": "dark",
+      "violations": []
     },
-    "violations": 0,
-    "severe": []
-  },
-  {
-    "route": "/demo/",
-    "status": 200,
-    "errors": [],
-    "basics": {
-      "title": "Demo — Screen Landmark Lens",
-      "lang": "en",
-      "h1": 1,
-      "main": true,
-      "missingAlt": 0
+    {
+      "route": "/demo/",
+      "colorScheme": "dark",
+      "violations": []
     },
-    "violations": 0,
-    "severe": []
-  },
-  {
-    "route": "/privacy/",
-    "status": 200,
-    "errors": [],
-    "basics": {
-      "title": "Privacy — Screen Landmark Lens",
-      "lang": "en",
-      "h1": 1,
-      "main": true,
-      "missingAlt": 0
+    {
+      "route": "/privacy/",
+      "colorScheme": "dark",
+      "violations": []
     },
-    "violations": 0,
-    "severe": []
-  },
-  {
-    "route": "/terms/",
-    "status": 200,
-    "errors": [],
-    "basics": {
-      "title": "Terms — Screen Landmark Lens",
-      "lang": "en",
-      "h1": 1,
-      "main": true,
-      "missingAlt": 0
+    {
+      "route": "/terms/",
+      "colorScheme": "dark",
+      "violations": []
     },
-    "violations": 0,
-    "severe": []
-  },
-  {
-    "route": "/not-a-route",
-    "status": 404,
-    "errors": [
-      "Failed to load resource: the server responded with a status of 404 ()"
-    ],
-    "basics": {
-      "title": "Page not found — Screen Landmark Lens",
-      "lang": "en",
-      "h1": 1,
-      "main": true,
-      "missingAlt": 0
+    {
+      "route": "/polish-retry-cold-404",
+      "colorScheme": "dark",
+      "violations": []
     },
-    "violations": 0,
-    "severe": []
-  }
-]
+    {
+      "route": "/",
+      "colorScheme": "light",
+      "violations": []
+    },
+    {
+      "route": "/demo/",
+      "colorScheme": "light",
+      "violations": []
+    },
+    {
+      "route": "/privacy/",
+      "colorScheme": "light",
+      "violations": []
+    },
+    {
+      "route": "/terms/",
+      "colorScheme": "light",
+      "violations": []
+    },
+    {
+      "route": "/polish-retry-cold-404",
+      "colorScheme": "light",
+      "violations": []
+    }
+  ]
+}

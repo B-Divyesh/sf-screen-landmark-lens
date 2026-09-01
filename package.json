@@ -16,7 +16,8 @@
     "test:shared": "vitest run shared",
     "test:native": "node scripts/cargo-test.mjs",
     "test:web": "playwright test",
-    "test:app-web": "playwright test --config playwright.app.config.ts"
+    "test:app-web": "playwright test --config playwright.app.config.ts",
+    "verify:live": "node scripts/verify-live.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.11.1",

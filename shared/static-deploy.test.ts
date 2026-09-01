@@ -19,6 +19,7 @@ const tauriConfig = readFileSync(new URL("../src-tauri/tauri.conf.json", import.
 const shellInstaller = readFileSync(new URL("../site/public/install.sh", import.meta.url), "utf8");
 const powershellInstaller = readFileSync(new URL("../site/public/install.ps1", import.meta.url), "utf8");
 const landingPage = readFileSync(new URL("../site/index.html", import.meta.url), "utf8");
+const tauriLauncher = readFileSync(new URL("../scripts/tauri.mjs", import.meta.url), "utf8");
 
 describe("static deployment artifact", () => {
   it("@claim:unknown-route-404 does not rewrite unknown documents to the homepage", () => {
@@ -44,6 +45,11 @@ describe("static deployment artifact", () => {
     expect(releaseWorkflow).toContain("SHA256SUMS");
     expect(releaseManifest).toContain("const commit = process.env.GITHUB_SHA");
     expect(releaseManifest).toContain("JSON.stringify({ version, commit, platforms })");
+  });
+
+  it("runs the Windows tauri.cmd shim through a shell so the Windows release job can build", () => {
+    expect(tauriLauncher).toContain('const executable = process.platform === "win32" ? "tauri.cmd" : "tauri"');
+    expect(tauriLauncher).toContain("shell: process.platform === \"win32\"");
   });
 
   it("@claim:local-processing keeps the native OCR core free of HTTP clients and sends only landmark data to the UI", () => {

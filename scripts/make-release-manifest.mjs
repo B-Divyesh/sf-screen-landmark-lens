@@ -3,7 +3,7 @@ import { readdir, readFile, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 
 const directory = process.argv[2] || "release-assets";
-const version = (process.env.RELEASE_TAG || "v0.1.1").replace(/^v/, "");
+const version = (process.env.RELEASE_TAG || "v0.1.2").replace(/^v/, "");
 const repository = process.env.GITHUB_REPOSITORY || "B-Divyesh/sf-screen-landmark-lens";
 const tag = process.env.RELEASE_TAG || `v${version}`;
 const commit = process.env.GITHUB_SHA || "local-build";

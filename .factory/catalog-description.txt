@@ -1,0 +1,1 @@
+Find visible controls in remote desktops and older apps with local OCR and spoken directions.

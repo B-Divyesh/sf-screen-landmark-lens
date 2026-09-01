@@ -41,6 +41,8 @@ describe("static deployment artifact", () => {
   it("@claim:release-assets builds tagged cross-platform assets and records their source commit", () => {
     expect(releaseWorkflow).toContain('tags: ["v*"]');
     expect(releaseWorkflow).toContain("Verify the tag points at the release source");
+    expect(releaseWorkflow).toContain("Record the exact release source");
+    expect(releaseWorkflow).toContain("target_commitish: ${{ steps.release_source.outputs.commit }}");
     expect(releaseWorkflow).toContain("Screen-Landmark-Lens_${version}_linux.AppImage");
     expect(releaseWorkflow).toContain("SHA256SUMS");
     expect(releaseManifest).toContain("const commit = process.env.GITHUB_SHA");

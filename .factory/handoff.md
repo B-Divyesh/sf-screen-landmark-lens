@@ -1,8 +1,12 @@
-# Screen Landmark Lens — repair handoff
+# Screen Landmark Lens — verification handoff
 
-## Result
+## Result: PASS
 
-Release-blocking findings from `.factory/verification-2.md` have been repaired and regression-tested.
+Independent verification of candidate `22ce3ecf3d43a1e9368519ff1f286de81fd8cf1e` passed. The detailed record is in `.factory/verification-3.md`.
+
+The live static deployment at <https://screen-landmark-lens.sociobot.in> matches the candidate’s rebuilt static output byte-for-byte. This candidate contains documentation only; the currently published `v0.1.4` desktop release remains sourced from `18bf38159a42c7023ecff3caf88e47d29f5a4c71`.
+
+## Previous repair record
 
 - Product source release: `v0.1.4` → `18bf38159a42c7023ecff3caf88e47d29f5a4c71`
 - Release workflow: <https://github.com/B-Divyesh/sf-screen-landmark-lens/actions/runs/33551056135> — success on Linux, Windows, macOS arm64, and macOS x64

@@ -1,8 +1,9 @@
 import { createHash } from "node:crypto";
-import { execFileSync } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { promisify } from "node:util";
 import { describe, expect, it } from "vitest";
 
 type StaticWebAppsConfig = {
@@ -16,12 +17,17 @@ const root = new URL("../", import.meta.url);
 const path = (relative: string) => new URL(relative, root);
 const config = JSON.parse(readFileSync(path("site/public/staticwebapp.config.json"), "utf8")) as StaticWebAppsConfig;
 
-function runNativeClaim(name: string) {
-  return execFileSync("cargo", ["test", "--manifest-path", "src-tauri/Cargo.toml", name, "--", "--exact"], {
+const execFileAsync = promisify(execFile);
+const sharedCargoTarget = process.env.CARGO_TARGET_DIR || join(tmpdir(), "screen-landmark-lens-cargo-target");
+
+async function runNativeClaim(name: string) {
+  const { stdout, stderr } = await execFileAsync("cargo", ["test", "--manifest-path", "src-tauri/Cargo.toml", name, "--", "--exact"], {
     cwd: root,
     encoding: "utf8",
-    env: { ...process.env, CARGO_BUILD_JOBS: "1" },
+    env: { ...process.env, CARGO_BUILD_JOBS: "1", CARGO_TARGET_DIR: sharedCargoTarget },
+    maxBuffer: 50 * 1024 * 1024,
   });
+  return `${stdout}\n${stderr}`;
 }
 
 describe("static deployment artifact", () => {
@@ -35,18 +41,18 @@ describe("static deployment artifact", () => {
     expect((config.routes ?? []).find((route) => route.route === "/assets/*.avif")).toBeUndefined();
   });
 
-  it("@claim:local-processing runs the bundled recognition models without a service", () => {
-    expect(runNativeClaim("tests::claim_local_processing_loads_bundled_models_without_a_service"))
+  it("@claim:local-processing runs the bundled recognition models without a service", async () => {
+    expect(await runNativeClaim("tests::claim_local_processing_loads_bundled_models_without_a_service"))
       .toContain("test tests::claim_local_processing_loads_bundled_models_without_a_service ... ok");
   }, 600_000);
 
-  it("@claim:selected-window uses the requested fixture window and rejects a missing id", () => {
-    expect(runNativeClaim("tests::claim_selected_window_uses_only_the_requested_id"))
+  it("@claim:selected-window uses the requested fixture window and rejects a missing id", async () => {
+    expect(await runNativeClaim("tests::claim_selected_window_uses_only_the_requested_id"))
       .toContain("test tests::claim_selected_window_uses_only_the_requested_id ... ok");
   }, 600_000);
 
-  it("@claim:capture-discarded serializes OCR results without captured pixels", () => {
-    expect(runNativeClaim("tests::claim_capture_discarded_serializes_landmarks_without_pixels"))
+  it("@claim:capture-discarded serializes OCR results without captured pixels", async () => {
+    expect(await runNativeClaim("tests::claim_capture_discarded_serializes_landmarks_without_pixels"))
       .toContain("test tests::claim_capture_discarded_serializes_landmarks_without_pixels ... ok");
   }, 600_000);
 

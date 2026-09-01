@@ -10,10 +10,11 @@
     "build:app": "vite build --config vite.app.config.ts",
     "build:site": "vite build --config vite.site.config.ts",
     "build": "npm run build:app && npm run build:site",
-    "test": "tsc --noEmit && npm run test:copy && vitest run shared && cargo test --manifest-path src-tauri/Cargo.toml",
+    "test": "tsc --noEmit && npm run test:copy && vitest run shared && npm run test:native",
     "audit:copy": "node scripts/copy-audit.mjs --write",
     "test:copy": "node scripts/copy-audit.mjs",
     "test:shared": "vitest run shared",
+    "test:native": "node scripts/cargo-test.mjs",
     "test:web": "playwright test",
     "test:app-web": "playwright test --config playwright.app.config.ts"
   },

@@ -29,7 +29,7 @@ curl -fsSL https://screen-landmark-lens.sociobot.in/install.sh | sh
 irm https://screen-landmark-lens.sociobot.in/install.ps1 | iex
 ```
 
-Version 0.1.3 builds are unsigned. On macOS, right-click the installed app and choose **Open** the first time. Windows may show a SmartScreen notice. Screen-capture permission is requested by the operating system when needed.
+Version 0.1.4 builds are unsigned. On macOS, right-click the installed app and choose **Open** the first time. Windows may show a SmartScreen notice. Screen-capture permission is requested by the operating system when needed.
 
 ## Develop
 

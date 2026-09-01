@@ -8,6 +8,25 @@ const releaseCacheLifetimeMs = 60 * 60 * 1000;
 
 type CachedRelease = { expiresAt: number; release: Release };
 
+function publishedRelease(): Release | null {
+  const source = document.querySelector<HTMLScriptElement>("#release-bootstrap")?.textContent;
+  if (!source) return null;
+  try {
+    const release = JSON.parse(source) as Release;
+    return release.tag_name && Array.isArray(release.assets) ? release : null;
+  } catch {
+    return null;
+  }
+}
+
+function cacheRelease(release: Release) {
+  try {
+    localStorage.setItem(releaseCacheKey, JSON.stringify({ expiresAt: Date.now() + releaseCacheLifetimeMs, release } satisfies CachedRelease));
+  } catch {
+    // A privacy-restricted browser can still use the resolved download link.
+  }
+}
+
 function platformKey(): { key: string; label: string } {
   const platform = (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform || navigator.platform || navigator.userAgent;
   if (/win/i.test(platform)) return { key: "windows", label: "Download for Windows" };
@@ -32,8 +51,9 @@ async function resolveDownloads() {
     releaseNote.textContent = `Version ${release.tag_name.replace(/^v/, "")} · Free core tools · SHA-256 checked`;
   };
 
+  let cached: CachedRelease | null = null;
   try {
-    const cached = JSON.parse(localStorage.getItem(releaseCacheKey) || "null") as CachedRelease | null;
+    cached = JSON.parse(localStorage.getItem(releaseCacheKey) || "null") as CachedRelease | null;
     if (cached && cached.expiresAt > Date.now() && cached.release?.tag_name && Array.isArray(cached.release.assets)) {
       applyRelease(cached.release);
       return;
@@ -42,17 +62,28 @@ async function resolveDownloads() {
     // Storage may be unavailable; the release API still has a safe fallback.
   }
 
+  const published = publishedRelease();
+  // A first visit gets the release that was published with this site. This
+  // avoids turning a GitHub rate-limit response into a browser console error.
+  // Once its hour-long cache expires, the API below refreshes the metadata.
+  if (!cached && published) {
+    applyRelease(published);
+    cacheRelease(published);
+    return;
+  }
+
   try {
     const response = await fetch(releaseApi);
     if (!response.ok) throw new Error("No release");
     const release = await response.json() as Release;
     applyRelease(release);
-    try {
-      localStorage.setItem(releaseCacheKey, JSON.stringify({ expiresAt: Date.now() + releaseCacheLifetimeMs, release } satisfies CachedRelease));
-    } catch {
-      // A privacy-restricted browser can still use the resolved download link.
-    }
+    cacheRelease(release);
   } catch {
+    if (published) {
+      applyRelease(published);
+      cacheRelease(published);
+      return;
+    }
     releaseNote.textContent = "Downloads are being published. Open the release page.";
   }
 }

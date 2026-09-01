@@ -116,7 +116,7 @@
     "claim": "When release metadata is unavailable, the landing page keeps a calm direct Release page link.",
     "where": "Landing download area",
     "test": "npm run test:web -- --grep @claim:release-metadata-fallback",
-    "sandbox": "Browser returns a 503 metadata response and asserts the publishing message, release-page URL, and zero console errors."
+    "sandbox": "Browser removes the shipped release metadata, returns an empty API result, and asserts the publishing message, release-page URL, and zero console errors."
   },
   {
     "id": "unknown-route-404",

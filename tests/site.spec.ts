@@ -4,22 +4,13 @@ import AxeBuilder from "@axe-core/playwright";
 test("landing page has a clear, working download path", async ({ page }) => {
   const errors: string[] = [];
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
-  await page.route("https://api.github.com/repos/**/releases/latest", (route) => route.fulfill({
-    contentType: "application/json",
-    body: JSON.stringify({ tag_name: "v0.1.1", assets: [
-      { name: "Screen-Landmark-Lens_0.1.1_windows.msi", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.1/app.msi" },
-      { name: "Screen-Landmark-Lens_0.1.1_linux.AppImage", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.1/app.AppImage" },
-      { name: "Screen-Landmark-Lens_0.1.1_macos-arm64.dmg", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.1/arm.dmg" },
-      { name: "Screen-Landmark-Lens_0.1.1_macos-x64.dmg", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.1/x64.dmg" },
-    ] })
-  }));
   await page.goto("/");
   await expect(page).toHaveTitle(/Screen Landmark Lens/);
   await expect(page.locator("main")).toHaveCount(1);
   await expect(page.locator("h1")).toHaveCount(1);
   await expect(page.locator("#platform-download")).toBeVisible();
   await expect(page.locator("#platform-download")).toHaveAttribute("href", /github\.com\/B-Divyesh/);
-  await expect(page.locator("#release-note")).toContainText("Version 0.1.1");
+  await expect(page.locator("#release-note")).toContainText("Version 0.1.4");
   await expect(page.locator("img[alt]")).toHaveCount(1);
   expect(errors).toEqual([]);
 });
@@ -28,10 +19,12 @@ test("@claim:release-metadata-cache release metadata is cached locally for one h
   let requests = 0;
   const context = await browser.newContext();
   await context.addInitScript(() => {
-    if (!sessionStorage.getItem("release-cache-cleared")) {
-      localStorage.removeItem("lens:release-metadata:v1");
-      sessionStorage.setItem("release-cache-cleared", "true");
-    }
+    if (sessionStorage.getItem("release-cache-seeded")) return;
+    localStorage.setItem("lens:release-metadata:v1", JSON.stringify({
+      expiresAt: 0,
+      release: { tag_name: "v0.0.0", assets: [] },
+    }));
+    sessionStorage.setItem("release-cache-seeded", "true");
   });
   await context.route("https://api.github.com/repos/**/releases/latest", (route) => {
     requests += 1;
@@ -61,12 +54,31 @@ test("@claim:release-metadata-cache release metadata is cached locally for one h
 
 test("@claim:release-metadata-fallback unavailable metadata leaves a calm release-page link", async ({ page }) => {
   const errors: string[] = [];
-  await page.addInitScript(() => localStorage.removeItem("lens:release-metadata:v1"));
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
+  await page.route("http://127.0.0.1:4173/", async (route) => {
+    const response = await route.fetch();
+    const body = (await response.text()).replace(/<script type="application\/json" id="release-bootstrap">[\s\S]*?<\/script>\s*/, "");
+    await route.fulfill({ response, body });
+  });
   await page.route("https://api.github.com/repos/**/releases/latest", (route) => route.fulfill({ contentType: "application/json", body: "{}" }));
   await page.goto("/");
   await expect(page.locator("#release-note")).toHaveText("Downloads are being published. Open the release page.");
   await expect(page.locator("#platform-download")).toHaveAttribute("href", /releases\/latest$/);
+  expect(errors).toEqual([]);
+});
+
+test("a fresh visit avoids GitHub HTTP 403 console errors with the published release metadata", async ({ page }) => {
+  const errors: string[] = [];
+  let githubRequests = 0;
+  await page.addInitScript(() => localStorage.removeItem("lens:release-metadata:v1"));
+  page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
+  await page.route("https://api.github.com/repos/**/releases/latest", (route) => {
+    githubRequests += 1;
+    return route.fulfill({ status: 403, contentType: "application/json", body: '{"message":"rate limit"}' });
+  });
+  await page.goto("/");
+  await expect(page.locator("#release-note")).toContainText("Version 0.1.4");
+  expect(githubRequests).toBe(0);
   expect(errors).toEqual([]);
 });
 

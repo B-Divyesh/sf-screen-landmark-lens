@@ -1,0 +1,74 @@
+[
+  {
+    "route": "/",
+    "status": 200,
+    "errors": [],
+    "basics": {
+      "title": "Screen Landmark Lens — Find visible controls offline",
+      "lang": "en",
+      "h1": 1,
+      "main": true,
+      "missingAlt": 0
+    },
+    "violations": 0,
+    "severe": []
+  },
+  {
+    "route": "/demo/",
+    "status": 200,
+    "errors": [],
+    "basics": {
+      "title": "Demo — Screen Landmark Lens",
+      "lang": "en",
+      "h1": 1,
+      "main": true,
+      "missingAlt": 0
+    },
+    "violations": 0,
+    "severe": []
+  },
+  {
+    "route": "/privacy/",
+    "status": 200,
+    "errors": [],
+    "basics": {
+      "title": "Privacy — Screen Landmark Lens",
+      "lang": "en",
+      "h1": 1,
+      "main": true,
+      "missingAlt": 0
+    },
+    "violations": 0,
+    "severe": []
+  },
+  {
+    "route": "/terms/",
+    "status": 200,
+    "errors": [],
+    "basics": {
+      "title": "Terms — Screen Landmark Lens",
+      "lang": "en",
+      "h1": 1,
+      "main": true,
+      "missingAlt": 0
+    },
+    "violations": 0,
+    "severe": []
+  },
+  {
+    "route": "/not-a-route",
+    "status": 404,
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 ()"
+    ],
+    "basics": {
+      "title": "Page not found — Screen Landmark Lens",
+      "lang": "en",
+      "h1": 1,
+      "main": true,
+      "missingAlt": 0
+    },
+    "violations": 0,
+    "severe": []
+  }
+]

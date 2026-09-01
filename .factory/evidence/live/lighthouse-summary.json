@@ -1,0 +1,11 @@
+{
+  "url": "https://screen-landmark-lens.sociobot.in/",
+  "measuredAt": "2026-09-01T22:24:00Z",
+  "mode": "Lighthouse mobile",
+  "performance": 100,
+  "accessibility": 100,
+  "bestPractices": 100,
+  "seo": 100,
+  "largestContentfulPaintMs": 978.4115,
+  "cumulativeLayoutShift": 0.0077737673
+}

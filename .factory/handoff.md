@@ -20,7 +20,7 @@ The existing midnight paper-garden identity remains intact. The repair changes c
 - Added a generated copy audit that fails when the landing page or README changes.
 - Added a five-task keyboard/speech-output trial. The evidence honestly states that the worker had no human participant.
 
-## Verification before release
+## Verification
 
 Run from `/work/repo` after installing the Linux Tauri prerequisites listed in the release workflow:
 
@@ -47,7 +47,14 @@ Results on 2026-09-01 UTC:
 - Production dependency audit: zero vulnerabilities.
 - Native DEB build: pass; `screen-landmark-lens` 0.1.5 amd64, 14,829,860 bytes, SHA-256 `d07706234d339c53cfc67c1275e07025aa3ce15baaab8153b7265e18e0e10b1f`.
 
-Every command in `.factory/claims.json` must be rerun from a clean clone after release publication. The three published-release claims intentionally validate `v0.1.5` and its CI reports.
+Post-release clean-clone verification used `/tmp/sll-final-clean.7LXTDH/repo`. Its `HEAD` and local `v0.1.5` tag both resolved to `10e7782b03b146831a952f7b2dca8ae238674616`.
+
+- Every `.factory/claims.json` command: 26/26 passed individually. The command/result ledger is `.factory/evidence/clean-clone-claims.tsv`.
+- Full clean-clone `npm test`: 14/14 Vitest and 7/7 Rust tests passed.
+- Full clean-clone `npm run test:web`: 45 passed; one expected desktop skip covers the mobile-only geometry case.
+- Full clean-clone `npm run test:app-web`: 28/28 passed.
+- Full clean-clone `npm run build`: `dist/app` and `dist/site` produced.
+- Full clean-clone `npm audit --omit=dev`: zero vulnerabilities.
 
 ## Evidence
 
@@ -57,16 +64,30 @@ Every command in `.factory/claims.json` must be rerun from a clean clone after r
 - Demo contract: `.factory/demo.md`
 - Finding map: `.factory/polish-1.md`
 - Accessibility trial interpretation: `.factory/pilot-evidence.md`
+- Clean-clone claim ledger: `.factory/evidence/clean-clone-claims.tsv`
+- Live browser, axe, offline, routing, and release checks: `.factory/evidence/live/`
 
 ## Deployment and release
 
 - Static build command: `npm ci && npm test && npm run build:site`
 - Static output: `dist/site`
 - Desktop release tag: `v0.1.5`
+- Release source: `10e7782b03b146831a952f7b2dca8ae238674616`
+- Release workflow: <https://github.com/B-Divyesh/sf-screen-landmark-lens/actions/runs/33567475834> — all four platform builds and manifest job passed.
 - Live URL: <https://screen-landmark-lens.sociobot.in>
 - Release URL: <https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/tag/v0.1.5>
+- Deployment target: Azure Static Web App `sf-screen-landmark-lens`, production environment, from `dist/site`.
+- Published assets: macOS arm64/x64 DMGs, Windows MSI/NSIS, Linux AppImage/DEB/RPM, `latest.json`, `SHA256SUMS`, four signature reports, and the Windows installer verification report.
+- Independent download check: the 14,831,824-byte Linux DEB matched `SHA256SUMS`, SHA-256 `3d1eee1f222cf8f0edfdbeb74ef20d8d12f3394a4fe2008cca3f8ad17ea2a347`.
+- Factory `verify-url.sh`: HTTP 200, 822ms network-idle load, no console errors, one H1, `lang=en`, main landmark, no missing alt text, and no unlabeled buttons.
+- Axe WCAG A/AA/2.1 AA: zero violations on home, demo, privacy, terms, and the styled 404.
+- Lighthouse mobile: 100 performance, 100 accessibility, 100 best practices, 100 SEO; LCP 978ms; CLS 0.0078.
+- Cold 390×844 check: both actions and all three facts end by y=582.34; no visible text below 16px; no target below 44px.
+- Cold demo check: `/?demo=1` redirects to `/demo/?demo=1`; banner, Reset demo, Start for real, sample result, isolated storage, and offline reload all passed.
+- Cold routing check: demo, home, and Back focus the destination H1; legal routes return 200; the styled unknown route returns 404.
+- Cold release check: the Linux button points to the v0.1.5 AppImage; every internal link returned 200; ordinary routes logged no console errors.
 
-Deployment, release asset checks, clean-clone claim results, live URL verification, Lighthouse scores, and cold live recheck are recorded here after publication.
+The live screenshots and machine-readable reports are under `.factory/evidence/live/`.
 
 ## Honest constraint
 

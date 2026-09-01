@@ -1,0 +1,46 @@
+{
+  "url": "https://screen-landmark-lens.sociobot.in/",
+  "title": "Screen Landmark Lens — Find visible controls offline",
+  "releaseNote": "Version 0.1.5 · Free core tools · SHA-256 checked",
+  "downloadText": "Download for Linux",
+  "downloadHref": "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.5/Screen-Landmark-Lens_0.1.5_linux.AppImage",
+  "errors": [],
+  "links": [
+    {
+      "url": "https://screen-landmark-lens.sociobot.in/#main",
+      "status": 200
+    },
+    {
+      "url": "https://screen-landmark-lens.sociobot.in/",
+      "status": 200
+    },
+    {
+      "url": "https://screen-landmark-lens.sociobot.in/demo/",
+      "status": 200
+    },
+    {
+      "url": "https://screen-landmark-lens.sociobot.in/#how",
+      "status": 200
+    },
+    {
+      "url": "https://screen-landmark-lens.sociobot.in/#privacy",
+      "status": 200
+    },
+    {
+      "url": "https://screen-landmark-lens.sociobot.in/#download",
+      "status": 200
+    },
+    {
+      "url": "https://screen-landmark-lens.sociobot.in/?demo=1",
+      "status": 200
+    },
+    {
+      "url": "https://screen-landmark-lens.sociobot.in/privacy",
+      "status": 200
+    },
+    {
+      "url": "https://screen-landmark-lens.sociobot.in/terms",
+      "status": 200
+    }
+  ]
+}

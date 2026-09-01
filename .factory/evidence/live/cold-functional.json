@@ -1,0 +1,40 @@
+{
+  "redirect": "https://screen-landmark-lens.sociobot.in/demo/?demo=1",
+  "banner": "Demo — sample data, nothing is saved. This sample mirrors a legacy form and never opens another window.\n\nReset demo\nStart for real",
+  "result": "Found OCR text “Cancel”, bottom right. Review the label if it sounds unexpected.",
+  "resetInput": "Save",
+  "storage": {
+    "local": [],
+    "session": [],
+    "cookies": ""
+  },
+  "demoThirdParty": [],
+  "demoErrors": [],
+  "firstScreen": [
+    {
+      "text": "Try it with sample data",
+      "bottom": 409.34375
+    },
+    {
+      "text": "Download for Linux",
+      "bottom": 459.34375
+    },
+    {
+      "text": "✓ Captures stay on this device",
+      "bottom": 536.34375
+    },
+    {
+      "text": "✓ Works offline after install",
+      "bottom": 559.34375
+    },
+    {
+      "text": "✓ All tools in this build are free",
+      "bottom": 582.34375
+    }
+  ],
+  "smallText": [],
+  "smallTargets": [],
+  "demoFocused": true,
+  "homeFocused": true,
+  "backFocused": true
+}

@@ -1,0 +1,97 @@
+[
+  {
+    "url": "https://github.com/B-Divyesh/sf-screen-landmark-lens",
+    "status": 200,
+    "finalUrl": "https://github.com/B-Divyesh/sf-screen-landmark-lens"
+  },
+  {
+    "url": "https://github.com/B-Divyesh/sf-screen-landmark-lens/blob/main/.factory/design.md",
+    "status": 200,
+    "finalUrl": "https://github.com/B-Divyesh/sf-screen-landmark-lens/blob/main/.factory/design.md"
+  },
+  {
+    "url": "https://github.com/B-Divyesh/sf-screen-landmark-lens/issues",
+    "status": 200,
+    "finalUrl": "https://github.com/B-Divyesh/sf-screen-landmark-lens/issues"
+  },
+  {
+    "url": "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.5/Screen-Landmark-Lens_0.1.5_linux.AppImage",
+    "status": 200,
+    "finalUrl": "https://release-assets.githubusercontent.com/github-production-release-asset/1349361181/7d05d2c2-5031-4cb1-b169-c37e7bde3b5b?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-09-01T23%3A46%3A41Z&rscd=attachment%3B+filename%3DScreen-Landmark-Lens_0.1.5_linux.AppImage&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-09-01T22%3A46%3A24Z&ske=2026-09-01T23%3A46%3A41Z&sks=b&skv=2018-11-09&sig=ze9yZCm0JaFplrzD3uqL8CDbE3cju%2FyGaBkdlZTc%2BmE%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc4ODMwNTE1MywibmJmIjoxNzg4MzAzMzUzLCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.0_G9gHbwbu5LDUU0BjtkuX20xXqc-LJJkf4ow9sSqtE&response-content-disposition=attachment%3B%20filename%3DScreen-Landmark-Lens_0.1.5_linux.AppImage&response-content-type=application%2Foctet-stream"
+  },
+  {
+    "url": "https://screen-landmark-lens.sociobot.in/",
+    "status": 200,
+    "finalUrl": "https://screen-landmark-lens.sociobot.in/"
+  },
+  {
+    "url": "https://screen-landmark-lens.sociobot.in/#download",
+    "status": 200,
+    "finalUrl": "https://screen-landmark-lens.sociobot.in/"
+  },
+  {
+    "url": "https://screen-landmark-lens.sociobot.in/#how",
+    "status": 200,
+    "finalUrl": "https://screen-landmark-lens.sociobot.in/"
+  },
+  {
+    "url": "https://screen-landmark-lens.sociobot.in/#main",
+    "status": 200,
+    "finalUrl": "https://screen-landmark-lens.sociobot.in/"
+  },
+  {
+    "url": "https://screen-landmark-lens.sociobot.in/#privacy",
+    "status": 200,
+    "finalUrl": "https://screen-landmark-lens.sociobot.in/"
+  },
+  {
+    "url": "https://screen-landmark-lens.sociobot.in/404.html#main",
+    "status": 200,
+    "finalUrl": "https://screen-landmark-lens.sociobot.in/404.html"
+  },
+  {
+    "url": "https://screen-landmark-lens.sociobot.in/?demo=1",
+    "status": 200,
+    "finalUrl": "https://screen-landmark-lens.sociobot.in/?demo=1"
+  },
+  {
+    "url": "https://screen-landmark-lens.sociobot.in/demo/",
+    "status": 200,
+    "finalUrl": "https://screen-landmark-lens.sociobot.in/demo/"
+  },
+  {
+    "url": "https://screen-landmark-lens.sociobot.in/demo/#main",
+    "status": 200,
+    "finalUrl": "https://screen-landmark-lens.sociobot.in/demo/"
+  },
+  {
+    "url": "https://screen-landmark-lens.sociobot.in/demo/#sample",
+    "status": 200,
+    "finalUrl": "https://screen-landmark-lens.sociobot.in/demo/"
+  },
+  {
+    "url": "https://screen-landmark-lens.sociobot.in/demo/#walkthrough",
+    "status": 200,
+    "finalUrl": "https://screen-landmark-lens.sociobot.in/demo/"
+  },
+  {
+    "url": "https://screen-landmark-lens.sociobot.in/privacy",
+    "status": 200,
+    "finalUrl": "https://screen-landmark-lens.sociobot.in/privacy"
+  },
+  {
+    "url": "https://screen-landmark-lens.sociobot.in/privacy/#main",
+    "status": 200,
+    "finalUrl": "https://screen-landmark-lens.sociobot.in/privacy/"
+  },
+  {
+    "url": "https://screen-landmark-lens.sociobot.in/terms",
+    "status": 200,
+    "finalUrl": "https://screen-landmark-lens.sociobot.in/terms"
+  },
+  {
+    "url": "https://screen-landmark-lens.sociobot.in/terms/#main",
+    "status": 200,
+    "finalUrl": "https://screen-landmark-lens.sociobot.in/terms/"
+  }
+]

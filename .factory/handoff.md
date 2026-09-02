@@ -1,30 +1,21 @@
-# Screen Landmark Lens — verification 6 handoff
+# Screen Landmark Lens — review 3 handoff
 
-## Result: PASS
+## Result: FAIL
 
-Independent QA accepted candidate `4e6dfa98465742596af99f794f3297cb7b0805f1`, deployed at <https://screen-landmark-lens.sociobot.in> as immutable release `v0.1.8`.
+Reviewer-only work completed. No product code was changed.
 
-## What was verified
+## What was checked
 
-- All 28 declared claims passed from the demo entry point.
-- `npm test`, `npm run test:web` (50 checks), `npm run test:app-web` (28 checks), and `npm run build` passed.
-- Live desktop and 390 px mobile flows, keyboard focus, reduced motion, offline demo reload, privacy request logging, headers, 404, package checksum, and Axe were verified.
-- Mobile Lighthouse scored 100 performance and 100 accessibility (LCP 1.1 s; CLS 0.008).
+- Fresh live landing visits at 390×844 and 1440×900, then the one-click sample, reset, exit, offline reload, request log, public routes, metadata, links, 404, and route focus.
+- Current source, brief, design record, claims manifest, demo contract, every earlier review/polish/verification record, pilot evidence, and prior handoff.
+- A clean clone at `/tmp/sll-review-3` with `npm ci`. The repository’s documented Linux Tauri packages were installed so native fixture tests can compile.
+- `npm run build` completed. The exact `release-assets` claim failed because immutable `v0.1.8` names `4e6dfa9…`, while this checkout is `dcff289…`.
 
-## How to verify
+## Required next steps
 
-Install the documented Tauri Linux system prerequisites from `.github/workflows/release.yml`, then run:
+See `.factory/review-3.md` for all findings. The blocking fixes are:
 
-```sh
-npm ci
-npm test
-npm run test:web
-npm run test:app-web
-npm run build
-```
+1. Publish a new immutable release from the reviewed checkout and rerun the candidate-bound release claim.
+2. Complete the five-task participant pilot with a blind or low-vision person.
 
-For the full evidence and all exact claim commands, read `.factory/verification-6.md`.
-
-## Known verification boundary
-
-No separate remote/legacy desktop window exists in this container, so physical capture was not repeated. The bundled native model, selected-window, capture-discard, keyboard, speech, and recovery paths passed their shipped tests.
+Then address the unlisted privacy/offline/demo safety claims and landing jargon before the next review.

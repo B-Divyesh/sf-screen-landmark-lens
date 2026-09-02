@@ -1,19 +1,31 @@
-# Screen Landmark Lens — review 2 handoff
+# Screen Landmark Lens — polish 2 handoff
 
-## Result: FAIL
+## Result
 
-This reviewer changed no product code. It completed an adversarial first-read review of <https://screen-landmark-lens.sociobot.in> and committed `.factory/review-2.md`.
+Repair candidate for the immutable `v0.1.8` release. The desktop app remains a Tauri 2 application with a static Vite download site.
 
-### What was verified
+## What changed
 
-- Fresh 390×844 and desktop landing-page checks: the job, audience, and first action are clear; the action and three plain facts fit on the first mobile screen.
-- One-click live demo: realistic sample appears immediately; banner, reset, exit, same-origin request log, isolated browser storage, offline reload, and route focus passed.
-- Clean clone at `5de390fb771123d9f3d7a334c2a7330cdd738021`: after installing the repository's documented Linux Tauri prerequisites, `npm test` and `npm run build` passed. Twenty-five of 26 exact claim commands passed.
-- Live metadata, 404, deep-link/back focus, serious/critical axe checks in both schemes, console errors, responsive target/text sizing, external/internal link crawl, and visual-design check passed.
+- Kept the one-click `?demo=1` sample isolated, with its persistent banner, reset, exit, offline shell, and separate desktop preference key.
+- Reframed the unrun participant study as planned field research. The shipped five-task run is explicitly automated pre-pilot coverage, not a human-product assertion.
+- Replaced capture-memory, telemetry, cloud, and hidden-capture promises with the verified boundary: recognition returns labels and directions, not capture pixels; the person chooses a window first.
+- Made header/footer wording and navigation consistent on home, demo, privacy, terms, and 404. Replaced `wayfinding` and `target` terminology with `label-finding` and `visible label`.
+- Added regressions for shared chrome, privacy-copy scope, and demo terminology. Updated release identity to the new immutable version.
 
-### Blocking work left
+## Verification completed locally
 
-1. `@claim:release-assets` fails for the reviewed current checkout: immutable `v0.1.6` and the live site identify `3141e356975dfbea151bd239708adfe2d520f0e6`, not current `main` `5de390fb771123d9f3d7a334c2a7330cdd738021`.
-2. The brief's required blind or low-vision participant pilot remains absent; the current five-task record is explicitly an automated pre-pilot.
+- `npm ci`
+- `npm test` — 15 TypeScript/shared tests and 7 Rust tests passed after the documented Linux Tauri prerequisites.
+- `npm run build` — built `dist/app` and `dist/site`; site JavaScript is 4.46 KB gzip and CSS is 3.71 KB gzip.
+- `npm run test:web` — 50 site/browser checks passed.
+- `npm run test:app-web` — 28 desktop-browser checks passed.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`
+- `CARGO_BUILD_JOBS=1 cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`
 
-The review also records consistent-chrome, unlisted native privacy claim, terminology, and jargon findings. See `.factory/review-2.md` for exact evidence and fixes.
+## Release and deployment evidence
+
+`v0.1.8` is the source-bound release candidate. After publication, run every command in `.factory/claims.json` from a fresh clone, including the two `VERIFY_PUBLISHED_RELEASE=1` commands, then deploy `dist/site` with `RELEASE_COMMIT` set to the tagged source commit. The live evidence is the home-page release meta tag and `/release.json`, which must name that same commit.
+
+## Known gaps and next steps
+
+There is no claimed human participant result. The planned next research step is a consent-safe, five-task session with a blind or low-vision participant using the installed desktop app. No product functionality, security, accessibility, or release-identity finding is intentionally left unresolved.

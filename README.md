@@ -32,7 +32,7 @@ curl -fsSL https://screen-landmark-lens.sociobot.in/install.sh | sh
 irm https://screen-landmark-lens.sociobot.in/install.ps1 | iex
 ```
 
-Version 0.1.7 packages have no publisher signature. On macOS, right-click the installed app and choose **Open** the first time.
+Version 0.1.8 packages have no publisher signature. On macOS, right-click the installed app and choose **Open** the first time.
 
 The operating system asks for screen-capture permission when needed.
 

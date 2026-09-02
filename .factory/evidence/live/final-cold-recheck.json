@@ -1,6 +1,6 @@
 {
   "base": "https://screen-landmark-lens.sociobot.in",
-  "checkedAt": "2026-09-01T23:43:29.382Z",
+  "checkedAt": "2026-09-02T06:28:43.697Z",
   "routes": {
     "/": {
       "status": 200,
@@ -8,10 +8,11 @@
       "lang": "en",
       "h1": 1,
       "main": 1,
-      "description": "Find visible controls in inaccessible remote desktops and legacy apps. Screen Landmark Lens captures one chosen window and reads it locally.",
+      "description": "Find visible controls in inaccessible remote desktops and legacy apps. Choose one window and receive label directions.",
       "canonical": "https://screen-landmark-lens.sociobot.in/",
       "ogImage": "https://screen-landmark-lens.sociobot.in/assets/social-card.webp",
       "twitterCard": "summary_large_image",
+      "releaseCommit": "70fc3237ee66760ec51c7726acd8f624a5570563",
       "missingAlt": 0,
       "errors": []
     },
@@ -25,6 +26,7 @@
       "canonical": "https://screen-landmark-lens.sociobot.in/demo/",
       "ogImage": "https://screen-landmark-lens.sociobot.in/assets/social-card.webp",
       "twitterCard": "summary_large_image",
+      "releaseCommit": "70fc3237ee66760ec51c7726acd8f624a5570563",
       "missingAlt": 0,
       "errors": []
     },
@@ -34,10 +36,11 @@
       "lang": "en",
       "h1": 1,
       "main": 1,
-      "description": "Privacy details for Screen Landmark Lens, a local desktop wayfinding aid.",
+      "description": "Privacy details for Screen Landmark Lens, a desktop tool that finds visible labels.",
       "canonical": "https://screen-landmark-lens.sociobot.in/privacy/",
       "ogImage": "https://screen-landmark-lens.sociobot.in/assets/social-card.webp",
       "twitterCard": "summary_large_image",
+      "releaseCommit": "",
       "missingAlt": 0,
       "errors": []
     },
@@ -47,10 +50,11 @@
       "lang": "en",
       "h1": 1,
       "main": 1,
-      "description": "Terms for Screen Landmark Lens, a local desktop wayfinding aid.",
+      "description": "Terms for Screen Landmark Lens, a desktop tool that finds visible labels.",
       "canonical": "https://screen-landmark-lens.sociobot.in/terms/",
       "ogImage": "https://screen-landmark-lens.sociobot.in/assets/social-card.webp",
       "twitterCard": "summary_large_image",
+      "releaseCommit": "",
       "missingAlt": 0,
       "errors": []
     },
@@ -65,8 +69,8 @@
     "requiredBottoms": [
       409.34375,
       536.34375,
-      559.34375,
-      582.34375
+      578.34375,
+      601.34375
     ],
     "smallText": [],
     "smallTargets": []
@@ -82,6 +86,7 @@
       "cookies": ""
     },
     "onlySameOriginRequests": true,
+    "noPopupOrNativeBridge": true,
     "headingFocused": true
   },
   "links": {
@@ -90,5 +95,10 @@
     "https://screen-landmark-lens.sociobot.in/?demo=1": 200,
     "https://screen-landmark-lens.sociobot.in/privacy": 200,
     "https://screen-landmark-lens.sociobot.in/terms": 200
+  },
+  "releaseIdentity": {
+    "version": "0.1.11",
+    "tag": "v0.1.11",
+    "commit": "70fc3237ee66760ec51c7726acd8f624a5570563"
   }
 }

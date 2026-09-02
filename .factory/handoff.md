@@ -2,6 +2,10 @@
 
 ## Result
 
+### Independent verification 4 — FAIL (2026-09-02 UTC)
+
+Candidate `9085ecdbaa62d0dd90008017b0c2495387f19787` passes all 26 declared claims, the complete local test suite, build, live accessibility/privacy checks, and a local Linux DEB build. It is **not releasable**: the live Download links still serve `v0.1.5` desktop packages whose `latest.json` source commit is `10e7782b03b146831a952f7b2dca8ae238674616`, not the candidate. See `.factory/verification-4.md` for exact evidence and the required release action.
+
 Release candidate 0.1.5 repairs all 32 findings from `.factory/review-1.md`. The full finding map is in `.factory/polish-1.md`.
 
 The existing midnight paper-garden identity remains intact. The repair changes copy, evidence, responsive order, focus behavior, route completeness, and release verification without changing the Tauri desktop-app artifact class.

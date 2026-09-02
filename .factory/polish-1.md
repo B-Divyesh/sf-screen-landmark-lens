@@ -5,10 +5,12 @@ Review source: `.factory/review-1.md` at `f3bb467abcff2408e85ad356c989f44e3bf6b6
 
 Every review item is mapped below. Live checks used a new browser context after the final production deployment on 2026-09-01 UTC.
 
+Retry 1 reran this complete map from commit `9085ecd` on the disk-guard worker. Native claim subprocesses are now asynchronous and share one Cargo target. This removes Vitest worker timeouts and repeated native compilation without weakening any assertion. All 26 claim commands passed independently from clean clone `/tmp/sll-polish-retry.OcJDJu/repo`; the temporary clone and shared target were deleted after evidence capture.
+
 | Finding | Change made | Evidence | Live |
 | --- | --- | --- | --- |
-| F-1-1 | Replaced all eight invalid Vitest `--grep` commands with `-t`; added a manifest regression for every command and unique tag. | `claims contract > gives every unique claim one runnable tagged test`; every command in `.factory/claims.json` | PASS — all 26 commands in `.factory/evidence/clean-clone-claims.tsv` |
-| F-1-2 | Replaced source-string claims with native fixture execution, serialized result checks, installer execution, CI signature reports, and published-release checks. | `@claim:local-processing`, `selected-window`, `capture-discarded`, `checksum-installers`, `release-assets`, `package-signatures` | PASS — clean clone plus release run `33567475834` |
+| F-1-1 | Replaced all eight invalid Vitest `--grep` commands with `-t`; added a manifest regression for every command and unique tag. Retry 1 also made native subprocesses asynchronous and reused one Cargo target. | `claims contract > gives every unique claim one runnable tagged test`; every command in `.factory/claims.json`; `npm test` without worker errors | PASS — all 26 commands in `.factory/evidence/clean-clone-claims.tsv` |
+| F-1-2 | Replaced source-string claims with native fixture execution, serialized result checks, installer execution, CI signature reports, and published-release checks. | `@claim:local-processing`, `selected-window`, `capture-discarded`, `checksum-installers`, `release-assets`, `package-signatures` | PASS — retry clean clone, release run `33567475834`, and downloaded DEB SHA-256 match |
 | F-1-3 | Rewrote website storage wording to distinguish user data from public service-worker caches; added a storage outcome claim. | `@claim:website-demo-storage`, `@claim:offline-demo` | PASS — `/demo/?demo=1`; `live/cold-functional.json` and `live/offline-demo.json` |
 | F-1-4 | Replaced the Web Speech implementation claim with screen-reader announcement wording and a recorded adapter check. | `@claim:screen-reader-announcements` | PASS — clean-clone claim and live demo result |
 | F-1-5 | Narrowed README copy to release build targets and a one-selection window picker. | `@claim:release-assets`, `@claim:selected-window` | PASS — v0.1.5 has all seven required platform packages |

@@ -1,6 +1,6 @@
 {
   "base": "https://screen-landmark-lens.sociobot.in",
-  "checkedAt": "2026-09-02T06:28:43.697Z",
+  "checkedAt": "2026-09-02T06:56:36.133Z",
   "routes": {
     "/": {
       "status": 200,
@@ -12,7 +12,7 @@
       "canonical": "https://screen-landmark-lens.sociobot.in/",
       "ogImage": "https://screen-landmark-lens.sociobot.in/assets/social-card.webp",
       "twitterCard": "summary_large_image",
-      "releaseCommit": "70fc3237ee66760ec51c7726acd8f624a5570563",
+      "releaseCommit": "b23a4a567c1631eb895b4bbd332aea3d3a6ef50a",
       "missingAlt": 0,
       "errors": []
     },
@@ -26,7 +26,7 @@
       "canonical": "https://screen-landmark-lens.sociobot.in/demo/",
       "ogImage": "https://screen-landmark-lens.sociobot.in/assets/social-card.webp",
       "twitterCard": "summary_large_image",
-      "releaseCommit": "70fc3237ee66760ec51c7726acd8f624a5570563",
+      "releaseCommit": "b23a4a567c1631eb895b4bbd332aea3d3a6ef50a",
       "missingAlt": 0,
       "errors": []
     },
@@ -99,6 +99,6 @@
   "releaseIdentity": {
     "version": "0.1.11",
     "tag": "v0.1.11",
-    "commit": "70fc3237ee66760ec51c7726acd8f624a5570563"
+    "commit": "b23a4a567c1631eb895b4bbd332aea3d3a6ef50a"
   }
 }

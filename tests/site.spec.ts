@@ -1,5 +1,8 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { execFileSync } from "node:child_process";
+
+const releaseCommit = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
 
 test("landing page has a clear, working download path", async ({ page }) => {
   const errors: string[] = [];
@@ -9,8 +12,11 @@ test("landing page has a clear, working download path", async ({ page }) => {
   await expect(page.locator("main")).toHaveCount(1);
   await expect(page.locator("h1")).toHaveCount(1);
   await expect(page.locator("#platform-download")).toBeVisible();
-  await expect(page.locator("#platform-download")).toHaveAttribute("href", /github\.com\/B-Divyesh/);
-  await expect(page.locator("#release-note")).toContainText("Version 0.1.5");
+  await expect(page.locator("#platform-download")).toHaveAttribute("href", /releases\/download\/v0\.1\.6\//);
+  await expect(page.locator("#release-note")).toContainText("Version 0.1.6");
+  await expect(page.locator('meta[name="release-commit"]')).toHaveAttribute("content", releaseCommit);
+  await expect(page.locator("#release-source")).toContainText(releaseCommit);
+  expect(await page.request.get("/release.json").then((response) => response.json())).toEqual({ version: "0.1.6", tag: "v0.1.6", commit: releaseCommit });
   await expect(page.locator("img[alt]")).toHaveCount(1);
   expect(errors).toEqual([]);
 });
@@ -20,9 +26,9 @@ test("@claim:release-metadata-cache release metadata is cached locally for one h
   const context = await browser.newContext();
   await context.addInitScript(() => {
     if (sessionStorage.getItem("release-cache-seeded")) return;
-    localStorage.setItem("lens:release-metadata:v1", JSON.stringify({
+    localStorage.setItem("lens:release-metadata:v2", JSON.stringify({
       expiresAt: 0,
-      release: { tag_name: "v0.0.0", assets: [] },
+      release: { tag_name: "v0.0.0", target_commitish: "old", immutable: false, assets: [] },
     }));
     sessionStorage.setItem("release-cache-seeded", "true");
   });
@@ -30,22 +36,22 @@ test("@claim:release-metadata-cache release metadata is cached locally for one h
     requests += 1;
     return route.fulfill({
       contentType: "application/json",
-      body: JSON.stringify({ tag_name: "v0.1.1", assets: [
-        { name: "Screen-Landmark-Lens_0.1.1_windows.msi", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.1/app.msi" },
-        { name: "Screen-Landmark-Lens_0.1.1_linux.AppImage", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.1/app.AppImage" },
-        { name: "Screen-Landmark-Lens_0.1.1_macos-arm64.dmg", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.1/arm.dmg" },
-        { name: "Screen-Landmark-Lens_0.1.1_macos-x64.dmg", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.1/x64.dmg" },
+      body: JSON.stringify({ tag_name: "v0.1.6", target_commitish: releaseCommit, immutable: true, assets: [
+        { name: "Screen-Landmark-Lens_0.1.6_windows.msi", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.6/app.msi" },
+        { name: "Screen-Landmark-Lens_0.1.6_linux.AppImage", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.6/app.AppImage" },
+        { name: "Screen-Landmark-Lens_0.1.6_macos-arm64.dmg", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.6/arm.dmg" },
+        { name: "Screen-Landmark-Lens_0.1.6_macos-x64.dmg", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.6/x64.dmg" },
       ] }),
     });
   });
   const page = await context.newPage();
   try {
     await page.goto("http://127.0.0.1:4173/");
-    await expect(page.locator("#release-note")).toContainText("Version 0.1.1");
+    await expect(page.locator("#release-note")).toContainText("Version 0.1.6");
     await page.reload();
-    await expect(page.locator("#release-note")).toContainText("Version 0.1.1");
+    await expect(page.locator("#release-note")).toContainText("Version 0.1.6");
     expect(requests).toBe(1);
-    const cached = await page.evaluate(() => JSON.parse(localStorage.getItem("lens:release-metadata:v1") || "null"));
+    const cached = await page.evaluate(() => JSON.parse(localStorage.getItem("lens:release-metadata:v2") || "null"));
     expect(cached.expiresAt - Date.now()).toBeGreaterThan(59 * 60 * 1000);
   } finally {
     await context.close();
@@ -70,14 +76,14 @@ test("@claim:release-metadata-fallback unavailable metadata leaves a calm releas
 test("a fresh visit avoids GitHub HTTP 403 console errors with the published release metadata", async ({ page }) => {
   const errors: string[] = [];
   let githubRequests = 0;
-  await page.addInitScript(() => localStorage.removeItem("lens:release-metadata:v1"));
+  await page.addInitScript(() => localStorage.removeItem("lens:release-metadata:v2"));
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
   await page.route("https://api.github.com/repos/**/releases/latest", (route) => {
     githubRequests += 1;
     return route.fulfill({ status: 403, contentType: "application/json", body: '{"message":"rate limit"}' });
   });
   await page.goto("/");
-  await expect(page.locator("#release-note")).toContainText("Version 0.1.5");
+  await expect(page.locator("#release-note")).toContainText("Version 0.1.6");
   expect(githubRequests).toBe(0);
   expect(errors).toEqual([]);
 });
@@ -131,7 +137,7 @@ test("@claim:site-updates navigations use a versioned, network-first worker", as
   await page.goto("/");
   const worker = await page.request.get("/sw.js");
   const source = await worker.text();
-  expect(source).toContain('const CACHE = "landmark-lens-v3"');
+  expect(source).toContain('const CACHE = "landmark-lens-v4"');
   expect(source).toContain('if (event.request.mode === "navigate")');
   expect(source.indexOf("fetch(event.request)")).toBeLessThan(source.indexOf("caches.match(event.request).then((cached) => cached || fetch"));
 });

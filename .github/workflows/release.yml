@@ -17,7 +17,35 @@ env:
   RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || inputs.release_tag }}
 
 jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.source.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          fetch-depth: 0
+      - id: source
+        name: Bind the release to one source commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          commit="$(git rev-parse HEAD)"
+          test "$(git rev-list -n 1 "$RELEASE_TAG")" = "$commit"
+          test "v$(node -p "require('./package.json').version")" = "$RELEASE_TAG"
+          test "$(node -p "require('./src-tauri/tauri.conf.json').version")" = "${RELEASE_TAG#v}"
+          test "$(sed -n 's/^version = "\([^"]*\)"/\1/p' src-tauri/Cargo.toml | head -1)" = "${RELEASE_TAG#v}"
+          if gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Release $RELEASE_TAG already exists and cannot be replaced." >&2
+            exit 1
+          fi
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
   build:
+    needs: preflight
     strategy:
       fail-fast: false
       matrix:
@@ -43,9 +71,10 @@ jobs:
         shell: bash
         run: |
           test "$(git tag --points-at HEAD | grep -Fx "$RELEASE_TAG")" = "$RELEASE_TAG"
+          test "$(git rev-parse HEAD)" = "${{ needs.preflight.outputs.commit }}"
       - name: Install Linux build dependencies
         if: matrix.platform == 'ubuntu-latest'
-        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libx11-dev libxcb1-dev libxrandr-dev libdbus-1-dev libpipewire-0.3-dev libwayland-dev libclang-dev clang libgbm-dev
+        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libx11-dev libxcb1-dev libxrandr-dev libdbus-1-dev libpipewire-0.3-dev libwayland-dev libclang-dev clang libgbm-dev file
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
@@ -56,6 +85,8 @@ jobs:
       - run: npm ci
       - id: tauri
         uses: tauri-apps/tauri-action@v0
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: ${{ runner.os == 'Linux' && '1' || '' }}
         with:
           args: --target ${{ matrix.target }}
       - name: Stage macOS bundles
@@ -72,6 +103,7 @@ jobs:
           details="$(codesign -dv --verbose=4 "$app" 2>&1 || true)"
           if printf '%s' "$details" | grep -q '^Authority='; then echo "Unexpected publisher signature" >&2; exit 1; fi
           printf '{"platform":"%s","publisherSigned":false}\n' "${{ matrix.key }}" > "staged/${{ matrix.key }}.signature.json"
+          printf '{"platform":"%s","tag":"%s","commit":"%s"}\n' "${{ matrix.key }}" "$RELEASE_TAG" "$(git rev-parse HEAD)" > "staged/${{ matrix.key }}.source.json"
       - name: Stage Linux bundles
         if: runner.os == 'Linux'
         shell: bash
@@ -87,6 +119,7 @@ jobs:
           test -f "staged/Screen-Landmark-Lens_${version}_linux.rpm"
           if ar t "staged/Screen-Landmark-Lens_${version}_linux.deb" | grep -q '_gpgorigin'; then echo "Unexpected package signature" >&2; exit 1; fi
           printf '{"platform":"linux","publisherSigned":false}\n' > staged/linux.signature.json
+          printf '{"platform":"linux","tag":"%s","commit":"%s"}\n' "$RELEASE_TAG" "$(git rev-parse HEAD)" > staged/linux.source.json
       - name: Stage Windows bundles
         if: runner.os == 'Windows'
         shell: pwsh
@@ -102,6 +135,7 @@ jobs:
           $signature = Get-AuthenticodeSignature $msi.FullName
           if ($signature.Status -ne "NotSigned") { throw "Unexpected publisher signature: $($signature.Status)" }
           '{"platform":"windows","publisherSigned":false}' | Set-Content "staged/windows.signature.json"
+          @{ platform = "windows"; tag = $env:RELEASE_TAG; commit = (git rev-parse HEAD) } | ConvertTo-Json -Compress | Set-Content "staged/windows.source.json"
       - name: Exercise Windows checksum installer
         if: runner.os == 'Windows'
         shell: pwsh
@@ -131,7 +165,7 @@ jobs:
           if-no-files-found: error
 
   manifest:
-    needs: build
+    needs: [preflight, build]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -139,24 +173,26 @@ jobs:
           ref: ${{ github.ref_type == 'tag' && github.ref_name || inputs.release_tag }}
       - id: release_source
         name: Record the exact release source
-        run: echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+        run: |
+          test "$(git rev-parse HEAD)" = "${{ needs.preflight.outputs.commit }}"
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - uses: actions/download-artifact@v4
         with:
           path: release-assets
           merge-multiple: true
       - name: Create checksum and download manifests
-        run: GITHUB_SHA="$(git rev-parse HEAD)" node scripts/make-release-manifest.mjs release-assets
+        run: GITHUB_SHA="${{ needs.preflight.outputs.commit }}" node scripts/make-release-manifest.mjs release-assets
       - name: Verify release manifest
         run: |
-          jq -e '.version and .platforms.windows.url and .platforms["macos-arm64"].url and .platforms["macos-x64"].url and .platforms.linux.url' release-assets/latest.json
+          jq -e --arg commit "${{ needs.preflight.outputs.commit }}" '.commit == $commit and .release.commit == $commit and .checksums.commit == $commit and all(.platforms[]; .commit == $commit) and .platforms.windows.url and .platforms["macos-arm64"].url and .platforms["macos-x64"].url and .platforms.linux.url' release-assets/latest.json
           (cd release-assets && sha256sum --check SHA256SUMS)
-      - name: Publish release
+      - name: Upload complete draft release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.RELEASE_TAG }}
           target_commitish: ${{ steps.release_source.outputs.commit }}
           name: Screen Landmark Lens ${{ env.RELEASE_TAG }}
-          draft: false
+          draft: true
           prerelease: false
           body: |
             Screen Landmark Lens desktop packages for macOS, Windows, and Linux.
@@ -165,3 +201,16 @@ jobs:
 
             These packages have no publisher signature. On macOS, right-click the app and choose Open.
           files: release-assets/*
+      - name: Publish and lock the complete release
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release edit "$RELEASE_TAG" --draft=false --latest
+          for attempt in $(seq 1 12); do
+            test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" --jq .immutable)" = "true" && exit 0
+            sleep 5
+          done
+          echo "GitHub did not lock the published release." >&2
+          exit 1
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -1,35 +1,26 @@
-# Screen Landmark Lens — polish 1 handoff
+# Screen Landmark Lens — repair 4 handoff
 
 ## Result
 
-### Independent verification 4 — FAIL (2026-09-02 UTC)
+Release `v0.1.6` repairs the candidate/release identity failure in independent verification 4. The tag, immutable GitHub Release, desktop packages, per-platform source reports, `latest.json`, `SHA256SUMS`, download links, deployed site metadata, and `/release.json` are bound to the same commit: `git rev-parse v0.1.6`.
 
-Candidate `9085ecdbaa62d0dd90008017b0c2495387f19787` passes all 26 declared claims, the complete local test suite, build, live accessibility/privacy checks, and a local Linux DEB build. It is **not releasable**: the live Download links still serve `v0.1.5` desktop packages whose `latest.json` source commit is `10e7782b03b146831a952f7b2dca8ae238674616`, not the candidate. See `.factory/verification-4.md` for exact evidence and the required release action.
+The researched scope and midnight wayfinding-garden visual system are unchanged. Existing application, demo, accessibility, privacy, offline, and keyboard behavior remains covered.
 
-Release candidate 0.1.5 repairs all 32 findings from `.factory/review-1.md`. The full finding map is in `.factory/polish-1.md`.
+## Root cause and repair
 
-The existing midnight paper-garden identity remains intact. The repair changes copy, evidence, responsive order, focus behavior, route completeness, and release verification without changing the Tauri desktop-app artifact class.
+- Reproduced the exact mismatch: candidate `9085ecdbaa62d0dd90008017b0c2495387f19787` versus published source `10e7782b03b146831a952f7b2dca8ae238674616`. Evidence is in `.factory/evidence/repair-4-release-identity.md`.
+- Replaced the tag-only assertion with a candidate-bound release claim. A clean checkout now uses its own `HEAD` as the expected published source.
+- Bumped every package and visible release reference to `0.1.6`.
+- Added one source report per build matrix target. Manifest assembly rejects any report whose tag or commit differs.
+- Added the same full commit to the manifest root, release record, checksum record, and each platform download record.
+- Added a generated `/release.json` and matching landing-page metadata. The release cache moved to `v2`, so old `v0.1.5` links cannot survive this deploy.
+- The landing page accepts only immutable release metadata whose tag and commit match its own build. Mismatched or unavailable metadata falls back without a console error.
+- Enabled immutable releases for this repository. The workflow uploads one complete draft, publishes it once, and verifies that GitHub locked it.
+- Added `file` and `APPIMAGE_EXTRACT_AND_RUN=1` to the Linux packaging path. This makes local AppImage packaging work in the verifier container without FUSE.
 
-Retry 1 also fixed the native-claim runner itself. Cargo subprocesses now run asynchronously, and `npm test` plus every individual native claim share one target directory. This prevents the prior Vitest heartbeat timeout and repeated multi-gigabyte compilation on the disk-guard image.
+## Local verification
 
-## What changed
-
-- Added the one-click `/?demo=1` entry, persistent sample banner, reset, exit, and separate desktop demo preference.
-- Rewrote the first screen and every flagged phrase in concrete label-finding language.
-- Kept the complete primary action and privacy/offline/price facts inside 390×844.
-- Enforced 16px meaningful text and 44px targets in the site and desktop interface.
-- Added real route heading focus, Back/Forward handling, a complete shared-chrome 404, and full legal/footer links.
-- Expanded `.factory/claims.json` to 26 observable claims with one runnable tagged test each.
-- Replaced source-only native checks with controlled native outcomes and serialized result-boundary checks.
-- Executed valid/tampered shell installer fixtures; the release workflow produces the matching Windows outcome report.
-- Added CI-produced publisher-signature reports, release-asset/commit checks, dependency notices, and hashed image provenance.
-- Added a generated copy audit that fails when the landing page or README changes.
-- Added a five-task keyboard/speech-output trial. The evidence honestly states that the worker had no human participant.
-- Added `npm run verify:live` for repeatable cold route, metadata, mobile, demo, storage, focus, offline, link, and axe checks.
-
-## Verification
-
-Run from `/work/repo` after installing the Linux Tauri prerequisites listed in the release workflow:
+Run from a clean checkout after installing the Linux packages listed in `.github/workflows/release.yml`:
 
 ```sh
 npm ci
@@ -40,79 +31,36 @@ npm run build
 cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
 CARGO_BUILD_JOBS=1 cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
 npm audit --omit=dev
+APPIMAGE_EXTRACT_AND_RUN=1 npm run tauri -- build --bundles appimage,deb
 ```
 
-Results on 2026-09-01 UTC:
+Results on 2026-09-02 UTC:
 
-- `npm test`: pass; 14/14 Vitest and 7/7 Rust tests.
-- `npm run test:web`: pass; 45 passed and one expected desktop skip for a mobile-only geometry test.
-- `npm run test:app-web`: pass; 28/28.
-- `npm run build`: pass; `dist/app` and `dist/site` produced.
-- Site bundle: 1.91KB gzip JavaScript and 3.71KB gzip CSS.
-- App bundle: 3.39KB gzip JavaScript and 2.78KB gzip CSS.
-- Rust format and Clippy: pass.
-- Production dependency audit: zero vulnerabilities.
-- Native DEB build: pass; `screen-landmark-lens` 0.1.5 amd64, 14,829,860 bytes, SHA-256 `d07706234d339c53cfc67c1275e07025aa3ce15baaab8153b7265e18e0e10b1f`.
-
-Post-release clean-clone verification used `/tmp/sll-final-clean.7LXTDH/repo`. Its `HEAD` and local `v0.1.5` tag both resolved to `10e7782b03b146831a952f7b2dca8ae238674616`.
-
-- Every `.factory/claims.json` command: 26/26 passed individually. The command/result ledger is `.factory/evidence/clean-clone-claims.tsv`.
-- Full clean-clone `npm test`: 14/14 Vitest and 7/7 Rust tests passed.
-- Full clean-clone `npm run test:web`: 45 passed; one expected desktop skip covers the mobile-only geometry case.
-- Full clean-clone `npm run test:app-web`: 28/28 passed.
-- Full clean-clone `npm run build`: `dist/app` and `dist/site` produced.
-- Full clean-clone `npm audit --omit=dev`: zero vulnerabilities.
-
-Retry 1 clean-clone verification used `/tmp/sll-polish-retry.OcJDJu/repo` at repair commit `9085ecd`.
-
-- All 26 claim commands passed independently; `.factory/evidence/clean-clone-claims.tsv` records every command.
-- `npm test`: 14/14 Vitest and 7/7 Rust tests passed with no worker timeout.
-- `npm run test:web`: 45 passed and one expected desktop skip for the mobile-only geometry check.
+- Clean `npm ci`: 77 packages installed; zero vulnerabilities.
+- `npm test`: 15/15 TypeScript/shared tests and 7/7 Rust tests passed. The bundled-model claim completed without a service.
+- `npm run test:web`: 45 passed; one intentional desktop skip covers the mobile-only geometry assertion.
 - `npm run test:app-web`: 28/28 passed.
-- `npm run build`: both deployable outputs produced; `npm audit --omit=dev` found zero vulnerabilities.
-- One shared Cargo target served the full run. The first clean-clone native claim took 34 seconds; the next two took 3 and 2 seconds. The temporary clone and target were removed afterward.
+- `npm run build`: produced `dist/app` and `dist/site`. Site JS is 2.01 KB gzip and CSS is 3.71 KB gzip; app JS is 3.39 KB gzip and CSS is 2.78 KB gzip.
+- Rust format and Clippy with warnings denied: passed.
+- Production dependency audit: zero vulnerabilities.
+- Local AppImage: 89,852,408 bytes; SHA-256 `2c63f7692ecf48032e6c05521c18fbec019208a97971dcd2f3e881d8ca7b290b`.
+- Local DEB: 14,829,858 bytes; SHA-256 `f72664ba29e6ccaec3e3696d68a4bad162dd2c3b08ee35e4fc4798e59da5afeb`.
 
-## Evidence
+Browser coverage includes desktop and 390×844 mobile layouts, keyboard focus and Back navigation, both color schemes, reduced motion, demo isolation/reset, offline reload and network-first updates, privacy request logs, designed 404 handling, release fallback/cache behavior, and axe WCAG A/AA checks.
 
-- Mobile first screen: `.factory/evidence/polish-1-mobile-first-screen.png`
-- Five-task trial: `.factory/evidence/polish-1-five-task-trial.png`
-- Copy inventory: `.factory/copy-audit.md`
-- Demo contract: `.factory/demo.md`
-- Finding map: `.factory/polish-1.md`
-- Accessibility trial interpretation: `.factory/pilot-evidence.md`
-- Clean-clone claim ledger: `.factory/evidence/clean-clone-claims.tsv`
-- Retry clean-clone summary: `.factory/evidence/clean-clone-retry-summary.json`
-- Live browser, axe, offline, routing, and release checks: `.factory/evidence/live/`
+## Release and deployment evidence
 
-## Deployment and release
+- Release: <https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/tag/v0.1.6>
+- Workflow: `.github/workflows/release.yml`; all four platform builders must report the same source before manifest publication.
+- Published assets: macOS arm64/x64 DMGs, Windows MSI/NSIS, Linux AppImage/DEB/RPM, `SHA256SUMS`, `latest.json`, four signature reports, four source reports, and the Windows installer verification report.
+- Repository setting: immutable releases enabled. The release API reports `immutable: true` for `v0.1.6`.
+- Static target: Azure Static Web App `sf-screen-landmark-lens`, production environment, from `dist/site`.
+- Live URL: <https://screen-landmark-lens.sociobot.in>.
+- Exact identity check: `VERIFY_PUBLISHED_RELEASE=1 npm run test:shared -- -t @claim:release-assets` passes from the tagged checkout and checks GitHub, checksums, live metadata, and live download URLs together.
+- Full live check: `npm run verify:live -- https://screen-landmark-lens.sociobot.in` plus `/opt/fleet/lib/verify-url.sh` passes with zero console errors or serious/critical axe findings.
 
-- Static build command: `npm ci && npm test && npm run build:site`
-- Static output: `dist/site`
-- Desktop release tag: `v0.1.5`
-- Release source: `10e7782b03b146831a952f7b2dca8ae238674616`
-- Release workflow: <https://github.com/B-Divyesh/sf-screen-landmark-lens/actions/runs/33567475834> — all four platform builds and manifest job passed.
-- Live URL: <https://screen-landmark-lens.sociobot.in>
-- Release URL: <https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/tag/v0.1.5>
-- Deployment target: Azure Static Web App `sf-screen-landmark-lens`, production environment, from `dist/site`.
-- Retry deployment ID: `2e45e0d0-5da5-4ed0-8881-29e577c8a769`, deployed from the verified `9085ecd` workspace.
-- Published assets: macOS arm64/x64 DMGs, Windows MSI/NSIS, Linux AppImage/DEB/RPM, `latest.json`, `SHA256SUMS`, four signature reports, and the Windows installer verification report.
-- Independent download check: the 14,831,824-byte Linux DEB matched `SHA256SUMS`, SHA-256 `3d1eee1f222cf8f0edfdbeb74ef20d8d12f3394a4fe2008cca3f8ad17ea2a347`.
-- Factory `verify-url.sh`: HTTP 200, 948ms network-idle load, no console errors, one H1, `lang=en`, main landmark, no missing alt text, and no unlabeled buttons.
-- Axe WCAG A/AA/2.1 AA: zero violations on home, demo, privacy, terms, and the styled 404.
-- Lighthouse mobile: 100 performance, 100 accessibility, 100 best practices, 100 SEO; LCP 978ms; CLS 0.0078.
-- Cold 390×844 check: both actions and all three facts end by y=582.34; no visible text below 16px; no target below 44px.
-- Cold demo check: `/?demo=1` redirects to `/demo/?demo=1`; banner, Reset demo, Start for real, sample result, isolated storage, and offline reload all passed.
-- Cold routing check: demo, home, and Back focus the destination H1; legal routes return 200; the styled unknown route returns 404.
-- Cold release check: the Linux button points to the v0.1.5 AppImage; every internal link returned 200; ordinary routes logged no console errors.
-- Retry Lighthouse mobile: 100 performance, 100 accessibility, 100 best practices, 100 SEO; LCP 996ms, TBT 6ms, CLS 0.0078.
-- Retry package check: the 14,831,824-byte v0.1.5 Linux DEB matched published SHA-256 `3d1eee1f222cf8f0edfdbeb74ef20d8d12f3394a4fe2008cca3f8ad17ea2a347`.
+## Known external follow-up
 
-The live screenshots and machine-readable reports are under `.factory/evidence/live/`.
+The worker has no human participant or interactive desktop session. A blind or low-vision pilot remains the honest follow-up for the brief’s human success measure; it is not presented as a shipped claim.
 
-## Honest constraint
-
-The injected worker context states that no human is available. `.factory/pilot-evidence.md` therefore records a 5/5 keyboard and speech-adapter pre-pilot instead of fabricating blind-user research. A real blind or low-vision participant remains the external research step for the brief’s human success measure; it is not presented as a shipped product claim.
-
-## Operator signing action
-
-Version 0.1.5 has no publisher signatures. Future signed releases need the owner’s Apple and Windows certificates. The workflow would require `APPLE_CERTIFICATE` and `WINDOWS_CERT_PFX` only after signing steps are deliberately added.
+The `v0.1.6` packages are unsigned. Future publisher signing needs owner-provided Apple and Windows certificates. No updater is shipped, so there is no updater manifest.

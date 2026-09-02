@@ -2,7 +2,7 @@
 
 Generated from the current landing page and README. Every visible landing string, heading, question, and control label is included. Code samples are excluded.
 
-Source hashes: `site/index.html=05466213695c97470e03c72099c0c91ab401a8f259baff74e95809ef10e459d1 · README.md=d3e6067dc4ad3e555e1d52458f77320a7266d6249c575b81f6301492225d5e94`
+Source hashes: `site/index.html=bf0317cd80a9f904cca3ad0d3edaff6cde360fbe9d0bbebbbfc9018ce9dc4537 · README.md=96f5eb2fc38cd36974a16ac5a4ead004ca2a94688c262b14d137a9a0e614d716`
 
 ## Landing page inventory
 
@@ -101,8 +101,10 @@ Source hashes: `site/index.html=05466213695c97470e03c72099c0c91ab401a8f259baff74
 | ps1 \| iex | 2 | Pass |
 | Version 0. | 2 | Pass |
 | 1. | 1 | Pass |
-| 5 packages have no publisher signature. | 6 | Pass |
+| 6 packages have no publisher signature. | 6 | Pass |
 | On macOS, right-click the app and choose Open. | 8 | Pass |
+| Release source | 2 | Pass |
+| __RELEASE_COMMIT__ | 2 | Pass |
 | Before you install | 3 | Pass |
 | Product limits and recovery steps. | 5 | Pass |
 | Can Lens click a button for me? | 7 | Pass |
@@ -124,7 +126,7 @@ Source hashes: `site/index.html=05466213695c97470e03c72099c0c91ab401a8f259baff74
 | image provenance record | 3 | Pass |
 | Version 0. | 2 | Pass |
 | 1. | 1 | Pass |
-| 5 · Build polish-1 · Built by Param Factory | 7 | Pass |
+| 6 · Build repair-4 · Built by Param Factory | 7 | Pass |
 | Privacy | 1 | Pass |
 | Terms | 1 | Pass |
 | Source | 1 | Pass |
@@ -158,18 +160,18 @@ Source hashes: `site/index.html=05466213695c97470e03c72099c0c91ab401a8f259baff74
 | Download the detected platform build from the latest release, or use: | 11 | Pass |
 | Version 0. | 2 | Pass |
 | 1. | 1 | Pass |
-| 5 packages have no publisher signature. | 6 | Pass |
+| 6 packages have no publisher signature. | 6 | Pass |
 | On macOS, right-click the installed app and choose **Open** the first time. | 12 | Pass |
 | The operating system asks for screen-capture permission when needed. | 9 | Pass |
 | Develop | 1 | Pass |
 | Requirements: Node. | 2 | Pass |
 | js 22+, stable Rust, and the Tauri 2 system dependencies. | 10 | Pass |
-| On Debian/Ubuntu, the release workflow lists the complete package set, including WebKitGTK, PipeWire, GBM, and Clang. | 17 | Pass |
+| On Debian/Ubuntu, the release workflow lists the complete package set, including WebKitGTK, PipeWire, GBM, Clang, and `file`. | 18 | Pass |
+| In a container without FUSE, run `APPIMAGE_EXTRACT_AND_RUN=1 npm run tauri -- build --bundles appimage,deb`. | 18 | Pass |
 | The static deploy runs `npm run build:site` and publishes `dist/site`. | 12 | Pass |
 | Native packages are built in GitHub Actions from a `v*` tag. | 11 | Pass |
-| The workflow confirms that the tag points to its checkout. | 10 | Pass |
-| It records that commit in `latest. | 6 | Pass |
-| json` beside the packages and `SHA256SUMS`. | 6 | Pass |
+| The workflow confirms that the tag, packages, checksums, download links, and live site name one source commit. | 17 | Pass |
+| Published GitHub releases are immutable. | 5 | Pass |
 | Demo and checks | 3 | Pass |
 | Open `? | 1 | Pass |
 | demo=1` for an isolated, one-click sample. | 7 | Pass |

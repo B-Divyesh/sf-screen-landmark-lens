@@ -7,10 +7,12 @@ if (redirectingToDemo) {
 }
 
 type ReleaseAsset = { name: string; browser_download_url: string };
-type Release = { tag_name: string; assets: ReleaseAsset[] };
+type Release = { tag_name: string; target_commitish: string; immutable: boolean; assets: ReleaseAsset[] };
 const releaseApi = "https://api.github.com/repos/B-Divyesh/sf-screen-landmark-lens/releases/latest";
-const releaseCacheKey = "lens:release-metadata:v1";
+const releaseCacheKey = "lens:release-metadata:v2";
 const releaseCacheLifetimeMs = 60 * 60 * 1000;
+const expectedReleaseCommit = document.querySelector<HTMLMetaElement>('meta[name="release-commit"]')?.content || "";
+const expectedReleaseTag = document.querySelector<HTMLMetaElement>('meta[name="release-tag"]')?.content || "";
 
 type CachedRelease = { expiresAt: number; release: Release };
 
@@ -19,10 +21,17 @@ function publishedRelease(): Release | null {
   if (!source) return null;
   try {
     const release = JSON.parse(source) as Release;
-    return release.tag_name && Array.isArray(release.assets) ? release : null;
+    return matchesSiteRelease(release) ? release : null;
   } catch {
     return null;
   }
+}
+
+function matchesSiteRelease(release: Release) {
+  return release.tag_name === expectedReleaseTag
+    && release.target_commitish === expectedReleaseCommit
+    && release.immutable === true
+    && Array.isArray(release.assets);
 }
 
 function cacheRelease(release: Release) {
@@ -51,6 +60,7 @@ async function resolveDownloads() {
   const releaseNote = document.querySelector<HTMLElement>("#release-note")!;
   const suffixes: Record<string, string> = { windows: "_windows.msi", "macos-arm64": "_macos-arm64.dmg", "macos-x64": "_macos-x64.dmg", linux: "_linux.AppImage" };
   const applyRelease = (release: Release) => {
+    if (!matchesSiteRelease(release)) throw new Error("Release identity does not match this site build");
     const download = release.assets.find((asset) => asset.name.endsWith(suffixes[key]));
     if (!download) throw new Error("Platform asset is not published");
     buttons.forEach((button) => { if (button) button.href = download.browser_download_url; });

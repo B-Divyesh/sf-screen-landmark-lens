@@ -32,13 +32,13 @@ curl -fsSL https://screen-landmark-lens.sociobot.in/install.sh | sh
 irm https://screen-landmark-lens.sociobot.in/install.ps1 | iex
 ```
 
-Version 0.1.5 packages have no publisher signature. On macOS, right-click the installed app and choose **Open** the first time.
+Version 0.1.6 packages have no publisher signature. On macOS, right-click the installed app and choose **Open** the first time.
 
 The operating system asks for screen-capture permission when needed.
 
 ## Develop
 
-Requirements: Node.js 22+, stable Rust, and the [Tauri 2 system dependencies](https://v2.tauri.app/start/prerequisites/). On Debian/Ubuntu, the release workflow lists the complete package set, including WebKitGTK, PipeWire, GBM, and Clang.
+Requirements: Node.js 22+, stable Rust, and the [Tauri 2 system dependencies](https://v2.tauri.app/start/prerequisites/). On Debian/Ubuntu, the release workflow lists the complete package set, including WebKitGTK, PipeWire, GBM, Clang, and `file`.
 
 ```sh
 npm ci
@@ -51,9 +51,11 @@ npm run build        # dist/app and deployable dist/site
 npm run tauri build  # native bundle for the current host
 ```
 
+In a container without FUSE, run `APPIMAGE_EXTRACT_AND_RUN=1 npm run tauri -- build --bundles appimage,deb`.
+
 The static deploy runs `npm run build:site` and publishes `dist/site`. Native packages are built in GitHub Actions from a `v*` tag.
 
-The workflow confirms that the tag points to its checkout. It records that commit in `latest.json` beside the packages and `SHA256SUMS`.
+The workflow confirms that the tag, packages, checksums, download links, and live site name one source commit. Published GitHub releases are immutable.
 
 ## Demo and checks
 

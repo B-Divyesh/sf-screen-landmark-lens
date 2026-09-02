@@ -1,9 +1,11 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { chromium } from "playwright";
 import AxeBuilder from "@axe-core/playwright";
 
 const [rawBase = "https://screen-landmark-lens.sociobot.in", evidenceDir = ".factory/evidence/live"] = process.argv.slice(2);
 const base = rawBase.replace(/\/$/, "");
+const version = JSON.parse(readFileSync("package.json", "utf8")).version;
+const expectedReleaseCommit = process.env.EXPECTED_RELEASE_COMMIT || "";
 mkdirSync(evidenceDir, { recursive: true });
 
 function check(value, message) {
@@ -30,6 +32,7 @@ try {
       canonical: document.querySelector('link[rel="canonical"]')?.getAttribute("href") || "",
       ogImage: document.querySelector('meta[property="og:image"]')?.getAttribute("content") || "",
       twitterCard: document.querySelector('meta[name="twitter:card"]')?.getAttribute("content") || "",
+      releaseCommit: document.querySelector('meta[name="release-commit"]')?.getAttribute("content") || "",
       missingAlt: [...document.querySelectorAll("img")].filter((image) => !image.hasAttribute("alt")).length,
     }));
     check(response?.status() === 200, `${route} did not return 200`);
@@ -39,6 +42,15 @@ try {
     report.routes[route] = { status: response.status(), ...facts, errors };
     await context.close();
   }
+
+  const identityResponse = await fetch(`${base}/release.json`, { cache: "no-store" });
+  check(identityResponse.ok, "/release.json did not return 200");
+  const releaseIdentity = await identityResponse.json();
+  check(releaseIdentity.version === version && releaseIdentity.tag === `v${version}`, "Live version and tag do not match package.json");
+  check(/^[a-f0-9]{40}$/.test(releaseIdentity.commit), "Live release commit is invalid");
+  check(report.routes["/"].releaseCommit === releaseIdentity.commit, "Landing metadata and /release.json disagree");
+  if (expectedReleaseCommit) check(releaseIdentity.commit === expectedReleaseCommit, "Live release commit does not match the candidate");
+  report.releaseIdentity = releaseIdentity;
 
   const mobileContext = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   const mobile = await mobileContext.newPage();

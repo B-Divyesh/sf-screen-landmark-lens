@@ -85,6 +85,44 @@ describe("static deployment artifact", () => {
     }
   });
 
+  it("stamps every release link and checksum group with one source commit", () => {
+    const fixture = mkdtempSync(join(tmpdir(), "lens-release-manifest-"));
+    const commit = "a".repeat(40);
+    const tag = `v${productVersion}`;
+    const assets = {
+      "macos-arm64": `Screen-Landmark-Lens_${productVersion}_macos-arm64.dmg`,
+      "macos-x64": `Screen-Landmark-Lens_${productVersion}_macos-x64.dmg`,
+      windows: `Screen-Landmark-Lens_${productVersion}_windows.msi`,
+      linux: `Screen-Landmark-Lens_${productVersion}_linux.AppImage`,
+    };
+    for (const [platform, file] of Object.entries(assets)) {
+      writeFileSync(join(fixture, file), `${platform} package\n`);
+      writeFileSync(join(fixture, `${platform}.source.json`), JSON.stringify({ platform, tag, commit }));
+    }
+    execFileSync(process.execPath, [path("scripts/make-release-manifest.mjs").pathname, fixture], {
+      cwd: root,
+      env: { ...process.env, RELEASE_TAG: tag, GITHUB_SHA: commit, GITHUB_REPOSITORY: "B-Divyesh/sf-screen-landmark-lens" },
+    });
+    const manifest = JSON.parse(readFileSync(join(fixture, "latest.json"), "utf8"));
+    expect(manifest).toMatchObject({
+      schemaVersion: 2,
+      version: productVersion,
+      tag,
+      commit,
+      release: { commit },
+      checksums: { commit },
+    });
+    expect(Object.values(manifest.platforms).every((platform: any) => platform.commit === commit && platform.url.includes(`/releases/download/${tag}/`))).toBe(true);
+    expect(readFileSync(join(fixture, "SHA256SUMS"), "utf8")).toContain(assets.linux);
+
+    writeFileSync(join(fixture, "linux.source.json"), JSON.stringify({ platform: "linux", tag, commit: "b".repeat(40) }));
+    expect(() => execFileSync(process.execPath, [path("scripts/make-release-manifest.mjs").pathname, fixture], {
+      cwd: root,
+      env: { ...process.env, RELEASE_TAG: tag, GITHUB_SHA: commit },
+      stdio: "pipe",
+    })).toThrow();
+  });
+
   it("@claim:dependency-licenses matches locked recognition dependencies to their notices", () => {
     const metadata = JSON.parse(execFileSync("cargo", ["metadata", "--manifest-path", "src-tauri/Cargo.toml", "--format-version", "1"], { cwd: root, encoding: "utf8", maxBuffer: 50 * 1024 * 1024 }));
     const notices = readFileSync(path("THIRD_PARTY_NOTICES.md"), "utf8");
@@ -115,23 +153,47 @@ describe("static deployment artifact", () => {
     expect(release.target_commitish).toBe(expectedSource);
     expect(release.immutable).toBe(true);
     const names = release.assets.map((asset) => asset.name);
-    for (const suffix of ["macos-arm64.dmg", "macos-x64.dmg", "windows.msi", "windows-setup.exe", "linux.AppImage", "linux.deb", "linux.rpm", "SHA256SUMS", "latest.json"]) {
+    for (const suffix of ["macos-arm64.dmg", "macos-x64.dmg", "windows.msi", "windows-setup.exe", "linux.AppImage", "linux.deb", "linux.rpm", "SHA256SUMS", "latest.json", "macos-arm64.source.json", "macos-x64.source.json", "windows.source.json", "linux.source.json"]) {
       expect(names.some((name) => name.endsWith(suffix))).toBe(true);
     }
     const manifestAsset = release.assets.find((asset) => asset.name === "latest.json")!;
     const manifestResponse = await fetch(manifestAsset.browser_download_url);
     expect(manifestResponse.ok).toBe(true);
-    const manifest = await manifestResponse.json() as { version: string; tag: string; commit: string; platforms: Record<string, { sha256: string; url: string; publisherSigned: boolean; commit: string }> };
+    const manifest = await manifestResponse.json() as {
+      version: string;
+      tag: string;
+      commit: string;
+      release: { url: string; commit: string };
+      checksums: { url: string; commit: string };
+      platforms: Record<string, { sha256: string; url: string; publisherSigned: boolean; commit: string }>;
+    };
     expect(manifest.version).toBe(productVersion);
     expect(manifest.tag).toBe(release.tag_name);
     expect(manifest.commit).toBe(expectedSource);
+    expect(manifest.release.commit).toBe(expectedSource);
+    expect(manifest.checksums.commit).toBe(expectedSource);
+    const checksumText = await fetch(manifest.checksums.url).then((response) => {
+      expect(response.ok).toBe(true);
+      return response.text();
+    });
+    const checksums = new Map(checksumText.trim().split("\n").map((line) => {
+      const [sha256, file] = line.split(/\s+/, 2);
+      return [file, sha256];
+    }));
     expect(Object.keys(manifest.platforms).sort()).toEqual(["linux", "macos-arm64", "macos-x64", "windows"]);
     for (const value of Object.values(manifest.platforms)) {
       expect(value.sha256).toMatch(/^[a-f0-9]{64}$/);
       expect(value.url).toContain(`/releases/download/v${productVersion}/`);
       expect(value.publisherSigned).toBe(false);
       expect(value.commit).toBe(expectedSource);
+      expect(checksums.get(decodeURIComponent(new URL(value.url).pathname.split("/").at(-1)!))).toBe(value.sha256);
     }
+    const liveIdentityResponse = await fetch("https://screen-landmark-lens.sociobot.in/release.json", { cache: "no-store" });
+    expect(liveIdentityResponse.ok).toBe(true);
+    expect(await liveIdentityResponse.json()).toEqual({ version: productVersion, tag: release.tag_name, commit: expectedSource });
+    const liveHome = await fetch("https://screen-landmark-lens.sociobot.in/", { cache: "no-store" }).then((response) => response.text());
+    expect(liveHome).toContain(`<meta name="release-commit" content="${expectedSource}">`);
+    expect(liveHome).toContain(`/releases/download/v${productVersion}/`);
   }, 60_000);
 
   it("@claim:package-signatures uses CI-produced signature reports for every signed platform", async () => {

@@ -16,6 +16,7 @@ type StaticWebAppsConfig = {
 const root = new URL("../", import.meta.url);
 const path = (relative: string) => new URL(relative, root);
 const config = JSON.parse(readFileSync(path("site/public/staticwebapp.config.json"), "utf8")) as StaticWebAppsConfig;
+const productVersion = (JSON.parse(readFileSync(path("package.json"), "utf8")) as { version: string }).version;
 
 const execFileAsync = promisify(execFile);
 const sharedCargoTarget = process.env.CARGO_TARGET_DIR || join(tmpdir(), "screen-landmark-lens-cargo-target");
@@ -105,10 +106,14 @@ describe("static deployment artifact", () => {
 
   it("@claim:release-assets matches the published manifest, checksums, and exact source commit", async () => {
     if (process.env.VERIFY_PUBLISHED_RELEASE !== "1") return;
+    const expectedSource = process.env.EXPECTED_RELEASE_COMMIT
+      || execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
     const releaseResponse = await fetch("https://api.github.com/repos/B-Divyesh/sf-screen-landmark-lens/releases/latest", { headers: { "User-Agent": "screen-landmark-lens-claim-test" } });
     expect(releaseResponse.ok).toBe(true);
-    const release = await releaseResponse.json() as { tag_name: string; assets: Array<{ name: string; browser_download_url: string }> };
-    expect(release.tag_name).toBe("v0.1.5");
+    const release = await releaseResponse.json() as { tag_name: string; target_commitish: string; immutable: boolean; assets: Array<{ name: string; browser_download_url: string }> };
+    expect(release.tag_name).toBe(`v${productVersion}`);
+    expect(release.target_commitish).toBe(expectedSource);
+    expect(release.immutable).toBe(true);
     const names = release.assets.map((asset) => asset.name);
     for (const suffix of ["macos-arm64.dmg", "macos-x64.dmg", "windows.msi", "windows-setup.exe", "linux.AppImage", "linux.deb", "linux.rpm", "SHA256SUMS", "latest.json"]) {
       expect(names.some((name) => name.endsWith(suffix))).toBe(true);
@@ -116,14 +121,16 @@ describe("static deployment artifact", () => {
     const manifestAsset = release.assets.find((asset) => asset.name === "latest.json")!;
     const manifestResponse = await fetch(manifestAsset.browser_download_url);
     expect(manifestResponse.ok).toBe(true);
-    const manifest = await manifestResponse.json() as { commit: string; platforms: Record<string, { sha256: string; url: string; publisherSigned: boolean }> };
-    const taggedSource = execFileSync("git", ["rev-list", "-n", "1", "v0.1.5"], { cwd: root, encoding: "utf8" }).trim();
-    expect(manifest.commit).toBe(taggedSource);
+    const manifest = await manifestResponse.json() as { version: string; tag: string; commit: string; platforms: Record<string, { sha256: string; url: string; publisherSigned: boolean; commit: string }> };
+    expect(manifest.version).toBe(productVersion);
+    expect(manifest.tag).toBe(release.tag_name);
+    expect(manifest.commit).toBe(expectedSource);
     expect(Object.keys(manifest.platforms).sort()).toEqual(["linux", "macos-arm64", "macos-x64", "windows"]);
     for (const value of Object.values(manifest.platforms)) {
       expect(value.sha256).toMatch(/^[a-f0-9]{64}$/);
-      expect(value.url).toContain("/releases/download/v0.1.5/");
+      expect(value.url).toContain(`/releases/download/v${productVersion}/`);
       expect(value.publisherSigned).toBe(false);
+      expect(value.commit).toBe(expectedSource);
     }
   }, 60_000);
 
@@ -132,7 +139,7 @@ describe("static deployment artifact", () => {
     const releaseResponse = await fetch("https://api.github.com/repos/B-Divyesh/sf-screen-landmark-lens/releases/latest", { headers: { "User-Agent": "screen-landmark-lens-claim-test" } });
     expect(releaseResponse.ok).toBe(true);
     const release = await releaseResponse.json() as { tag_name: string; assets: Array<{ name: string; browser_download_url: string }> };
-    expect(release.tag_name).toBe("v0.1.5");
+    expect(release.tag_name).toBe(`v${productVersion}`);
     for (const platform of ["linux", "macos-arm64", "macos-x64", "windows"]) {
       const reportAsset = release.assets.find((asset) => asset.name === `${platform}.signature.json`);
       expect(reportAsset, `missing ${platform} signature report`).toBeTruthy();

@@ -2,7 +2,7 @@
 
 Generated from the current landing page and README. Every visible landing string, heading, question, and control label is included. Code samples are excluded.
 
-Source hashes: `site/index.html=970ae62246964effdbc1ef407c51234ed91eaf4eeaf8cc5af2f44cbeffcc8b5e · README.md=70dd1627a6181f81d53929cb8b748d2b763d8dd6fc04cdb7fbbc9d0d3d23c30f`
+Source hashes: `site/index.html=fe890ad49a3a74561b15dfa2f4a905347d7adff269231d786d2091bedfb11eb7 · README.md=e4ae9b62cfb73ed8b62b0c152d701024e02231c85dde0c4b9d54a00b0776bd7d`
 
 ## Landing page inventory
 
@@ -101,7 +101,7 @@ Source hashes: `site/index.html=970ae62246964effdbc1ef407c51234ed91eaf4eeaf8cc5a
 | ps1 \| iex | 2 | Pass |
 | Version 0. | 2 | Pass |
 | 1. | 1 | Pass |
-| 10 packages have no publisher signature. | 6 | Pass |
+| 11 packages have no publisher signature. | 6 | Pass |
 | On macOS, right-click the app and choose Open. | 8 | Pass |
 | Release source | 2 | Pass |
 | __RELEASE_COMMIT__ | 2 | Pass |
@@ -125,7 +125,7 @@ Source hashes: `site/index.html=970ae62246964effdbc1ef407c51234ed91eaf4eeaf8cc5a
 | image provenance record | 3 | Pass |
 | Version 0. | 2 | Pass |
 | 1. | 1 | Pass |
-| 10 · Build polish-3 · Built by Param Factory | 7 | Pass |
+| 11 · Build polish-3 · Built by Param Factory | 7 | Pass |
 | Privacy | 1 | Pass |
 | Terms | 1 | Pass |
 | Source | 1 | Pass |
@@ -160,7 +160,7 @@ Source hashes: `site/index.html=970ae62246964effdbc1ef407c51234ed91eaf4eeaf8cc5a
 | Download the detected platform build from the latest release, or use: | 11 | Pass |
 | Version 0. | 2 | Pass |
 | 1. | 1 | Pass |
-| 10 packages have no publisher signature. | 6 | Pass |
+| 11 packages have no publisher signature. | 6 | Pass |
 | On macOS, right-click the installed app and choose **Open** the first time. | 12 | Pass |
 | Develop | 1 | Pass |
 | Requirements: Node. | 2 | Pass |

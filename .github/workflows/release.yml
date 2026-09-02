@@ -142,11 +142,26 @@ jobs:
         run: |
           Set-Content -Path staged/installer-fixture.msi -Value "verified fixture"
           $hash = (Get-FileHash staged/installer-fixture.msi -Algorithm SHA256).Hash.ToLowerInvariant()
-          @{ platforms = @{ windows = @{ url = "http://127.0.0.1:8765/installer-fixture.msi"; sha256 = $hash } } } | ConvertTo-Json -Depth 4 | Set-Content staged/installer-fixture.json
-          $server = Start-Process python -ArgumentList "-m", "http.server", "8765", "--directory", "staged" -PassThru
-          Start-Sleep -Seconds 2
+          $port = Get-Random -Minimum 20000 -Maximum 50000
+          @{ platforms = @{ windows = @{ url = "http://127.0.0.1:$port/installer-fixture.msi"; sha256 = $hash } } } | ConvertTo-Json -Depth 4 | Set-Content staged/installer-fixture.json
+          $server = Start-Process py -ArgumentList "-3", "-m", "http.server", "$port", "--bind", "127.0.0.1", "--directory", "staged" -PassThru
+          $ready = $false
+          foreach ($attempt in 1..30) {
+            if ($server.HasExited) { throw "Checksum fixture server exited before listening." }
+            $probe = [System.Net.Sockets.TcpClient]::new()
+            try {
+              $probe.Connect("127.0.0.1", $port)
+              $ready = $true
+              break
+            } catch {
+              Start-Sleep -Milliseconds 250
+            } finally {
+              $probe.Dispose()
+            }
+          }
+          if (-not $ready) { throw "Checksum fixture server did not listen on port $port." }
           try {
-            $env:SLL_MANIFEST_URL = "http://127.0.0.1:8765/installer-fixture.json"
+            $env:SLL_MANIFEST_URL = "http://127.0.0.1:$port/installer-fixture.json"
             $env:SLL_VERIFY_ONLY = "1"
             $valid = Start-Process pwsh -ArgumentList "-File", "site/public/install.ps1" -Wait -PassThru -NoNewWindow
             if ($valid.ExitCode -ne 0) { throw "Valid checksum fixture was rejected" }

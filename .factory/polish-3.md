@@ -1,6 +1,6 @@
 # Screen Landmark Lens — polish round 3
 
-Final candidate: `v0.1.10` from the immutable-release workflow. The full source, demo, privacy, offline, release, accessibility, and copy checks are recorded in `.factory/handoff.md`.
+Final candidate: `v0.1.11` from the immutable-release workflow. The full source, demo, privacy, offline, release, accessibility, and copy checks are recorded in `.factory/handoff.md`.
 
 | Finding id | Change made | Evidence |
 | --- | --- | --- |
@@ -36,7 +36,7 @@ Final candidate: `v0.1.10` from the immutable-release workflow. The full source,
 | F-1-30 | Kept the short README opening. | `npm run test:copy`. |
 | F-1-31 | Kept short, plain release instructions. | `npm run test:copy`. |
 | F-1-32 | Defined optical character recognition once and used plain text-recognition copy first. | `npm run test:copy`; landing terminology regression. |
-| F-2-1 | Published a new immutable candidate release from the final checkout. | `@claim:release-assets`; live `/release.json`; release `v0.1.10`. |
+| F-2-1 | Published a new immutable candidate release from the final checkout. | `@claim:release-assets`; live `/release.json`; release `v0.1.11`. |
 | F-2-2 | Kept shared wordmark, four-link header, and versioned footer on every public route. | Public-route chrome regression; live `/`, `/demo/`, `/privacy/`, `/terms/`, and 404. |
 | F-2-3 | Removed broad in-memory/immediate-discard privacy wording. | `@claim:capture-discarded`. |
 | F-2-4 | Kept privacy guarantees separate and outcome-tested. | `@claim:selected-window`, `@claim:guidance-only`, copy regression. |

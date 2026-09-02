@@ -162,14 +162,14 @@
   },
   {
     "id": "release-assets",
-    "claim": "Release 0.1.10 provides macOS, Windows, and Linux packages tied to this source commit.",
+    "claim": "Release 0.1.11 provides macOS, Windows, and Linux packages tied to this source commit.",
     "where": "Landing, README, and latest.json",
     "test": "VERIFY_PUBLISHED_RELEASE=1 npm run test:shared -- -t @claim:release-assets",
     "sandbox": "GitHub release API, published latest.json, SHA256SUMS, and the live release identity are compared with the clean checkout commit and required package names."
   },
   {
     "id": "package-signatures",
-    "claim": "Version 0.1.10 packages have no publisher signature.",
+    "claim": "Version 0.1.11 packages have no publisher signature.",
     "where": "Landing install note and README",
     "test": "VERIFY_PUBLISHED_RELEASE=1 npm run test:shared -- -t @claim:package-signatures",
     "sandbox": "The claim reads CI-produced Linux, macOS, and Windows signature reports attached to the published release."

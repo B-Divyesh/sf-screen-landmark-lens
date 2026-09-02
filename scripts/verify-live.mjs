@@ -115,7 +115,7 @@ try {
   const missingResponse = await missing.goto(`${base}/polish-retry-cold-404`, { waitUntil: "networkidle" });
   check(missingResponse?.status() === 404, "Unknown route did not return 404");
   check(await missing.title() === "Page not found — Screen Landmark Lens", "404 title is incorrect");
-  check(await missing.locator("header nav a").count() === 3 && (await missing.locator("footer").textContent())?.includes("Built by Param Factory"), "404 shared chrome is incomplete");
+  check(await missing.locator("header nav a").count() === 4 && (await missing.locator("footer").textContent())?.includes("Built by Param Factory"), "404 shared chrome is incomplete");
   report.routes["/polish-retry-cold-404"] = { status: 404, title: await missing.title(), sharedChrome: true };
   await missingContext.close();
 

@@ -18,7 +18,7 @@
     <meta name="twitter:description" content="Choose one window and hear its visible labels and directions, without uploading a capture." />
     <meta name="twitter:image" content="https://screen-landmark-lens.sociobot.in/assets/social-card.webp" />
     <link rel="preload" as="image" href="/assets/wayfinding-garden-768.webp" type="image/webp" media="(max-width: 800px)" />
-    <script type="application/json" id="release-bootstrap">{"tag_name":"v0.1.6","target_commitish":"__RELEASE_COMMIT__","immutable":true,"assets":[{"name":"Screen-Landmark-Lens_0.1.6_windows.msi","browser_download_url":"https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.6/Screen-Landmark-Lens_0.1.6_windows.msi"},{"name":"Screen-Landmark-Lens_0.1.6_linux.AppImage","browser_download_url":"https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.6/Screen-Landmark-Lens_0.1.6_linux.AppImage"},{"name":"Screen-Landmark-Lens_0.1.6_macos-arm64.dmg","browser_download_url":"https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.6/Screen-Landmark-Lens_0.1.6_macos-arm64.dmg"},{"name":"Screen-Landmark-Lens_0.1.6_macos-x64.dmg","browser_download_url":"https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.6/Screen-Landmark-Lens_0.1.6_macos-x64.dmg"}]}</script>
+    <script type="application/json" id="release-bootstrap">{"tag_name":"v0.1.7","target_commitish":"__RELEASE_COMMIT__","immutable":true,"assets":[{"name":"Screen-Landmark-Lens_0.1.7_windows.msi","browser_download_url":"https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.7/Screen-Landmark-Lens_0.1.7_windows.msi"},{"name":"Screen-Landmark-Lens_0.1.7_linux.AppImage","browser_download_url":"https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.7/Screen-Landmark-Lens_0.1.7_linux.AppImage"},{"name":"Screen-Landmark-Lens_0.1.7_macos-arm64.dmg","browser_download_url":"https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.7/Screen-Landmark-Lens_0.1.7_macos-arm64.dmg"},{"name":"Screen-Landmark-Lens_0.1.7_macos-x64.dmg","browser_download_url":"https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.7/Screen-Landmark-Lens_0.1.7_macos-x64.dmg"}]}</script>
     <script type="module" src="/src/main.ts"></script>
     <script src="/route-focus.js" defer></script>
   </head>
@@ -69,7 +69,7 @@
 
       <section class="privacy-section section" id="privacy" aria-labelledby="privacy-title">
         <div class="privacy-orbit" aria-hidden="true"><span></span></div>
-        <div><p class="eyebrow">How Lens handles captures</p><h2 id="privacy-title">Captures are discarded after local text recognition.</h2><p>Captures live only in memory long enough for local OCR. They are discarded immediately after recognition. Lens has no telemetry, cloud vision service, remote control, or hidden full-screen capture.</p><a href="/privacy">Read the plain-language privacy policy →</a></div>
+        <div><p class="eyebrow">How Lens handles captures</p><h2 id="privacy-title">Capture pixels are not returned after recognition.</h2><p>After recognition, Lens returns labels and directions, not capture pixels. You choose a window before capture.</p><a href="/privacy">Read the plain-language privacy policy →</a></div>
       </section>
 
       <section class="comparison section" aria-labelledby="compare-title">
@@ -88,7 +88,7 @@
           <a class="primary-button" id="platform-download-2" href="https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/latest">Download for your computer</a>
           <a class="secondary-button" href="/?demo=1">Try the sample project first</a>
           <details><summary>Show command-line install options</summary><div class="commands"><p>macOS / Linux</p><code>curl -fsSL https://screen-landmark-lens.sociobot.in/install.sh | sh</code><p>Windows PowerShell</p><code>irm https://screen-landmark-lens.sociobot.in/install.ps1 | iex</code></div></details>
-          <p class="signing-note">Version 0.1.6 packages have no publisher signature. On macOS, right-click the app and choose Open.</p>
+          <p class="signing-note">Version 0.1.7 packages have no publisher signature. On macOS, right-click the app and choose Open.</p>
           <p class="signing-note" id="release-source">Release source <code>__RELEASE_COMMIT__</code>.</p>
         </div>
       </section>
@@ -99,6 +99,6 @@
         <details><summary>Does it work without internet?</summary><p>Yes. After installation, window capture and OCR run locally. Use the website only to download a release or read its documentation.</p></details>
       </div></section>
     </main>
-    <footer><div><a class="wordmark" href="/"><span class="mark" aria-hidden="true"></span><span>Landmark Lens</span></a><p>Find visible controls in software that does not label them.</p><p class="generated-note">Read the <a href="https://github.com/B-Divyesh/sf-screen-landmark-lens/blob/main/.factory/design.md">image provenance record</a>.</p><p>Version 0.1.6 · Build repair-4 · Built by Param Factory</p></div><nav aria-label="Footer navigation"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="https://github.com/B-Divyesh/sf-screen-landmark-lens">Source</a></nav></footer>
+    <footer><div><a class="wordmark" href="/"><span class="mark" aria-hidden="true"></span><span>Landmark Lens</span></a><p>Find visible controls in software that does not label them.</p><p class="generated-note">Read the <a href="https://github.com/B-Divyesh/sf-screen-landmark-lens/blob/main/.factory/design.md">image provenance record</a>.</p><p>Version 0.1.7 · Build polish-2 · Built by Param Factory</p></div><nav aria-label="Footer navigation"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="https://github.com/B-Divyesh/sf-screen-landmark-lens">Source</a></nav></footer>
   </body>
 </html>

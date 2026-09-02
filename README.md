@@ -17,7 +17,7 @@ Live site: <https://screen-landmark-lens.sociobot.in>
 - Keyboard-first label reading (`Alt+Shift+L`), text finding (`Alt+Shift+F`), and likely-button descriptions (`Alt+Shift+B`)
 - Screen-reader announcements accompany every result
 - Bundled sample project: find Save, Print, Cancel, and a status label before capturing a real window
-- Free wayfinding and voice-speed preference controls; no account or purchase is required in this build
+- Free label-finding and voice-speed controls; no account or purchase is required in this build
 - Static download site, privacy and terms pages, and a versioned service worker
 
 ## Install
@@ -32,7 +32,7 @@ curl -fsSL https://screen-landmark-lens.sociobot.in/install.sh | sh
 irm https://screen-landmark-lens.sociobot.in/install.ps1 | iex
 ```
 
-Version 0.1.6 packages have no publisher signature. On macOS, right-click the installed app and choose **Open** the first time.
+Version 0.1.7 packages have no publisher signature. On macOS, right-click the installed app and choose **Open** the first time.
 
 The operating system asks for screen-capture permission when needed.
 
@@ -77,7 +77,7 @@ CARGO_BUILD_JOBS=1 cargo clippy --manifest-path src-tauri/Cargo.toml --all-targe
 
 ## Privacy
 
-Captured pixels exist in memory only during OCR. The app drops them when analysis returns. Voice speed is stored locally.
+After recognition, Lens returns labels and directions, not capture pixels. You choose a window before capture.
 
 Desktop demo mode uses a separate `demo:lens:speech-rate` key. **Start for real** clears that key and restores the regular preference.
 

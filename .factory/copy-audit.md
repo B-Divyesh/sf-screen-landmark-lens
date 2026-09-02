@@ -2,7 +2,7 @@
 
 Generated from the current landing page and README. Every visible landing string, heading, question, and control label is included. Code samples are excluded.
 
-Source hashes: `site/index.html=bf0317cd80a9f904cca3ad0d3edaff6cde360fbe9d0bbebbbfc9018ce9dc4537 · README.md=96f5eb2fc38cd36974a16ac5a4ead004ca2a94688c262b14d137a9a0e614d716`
+Source hashes: `site/index.html=c45cdf36937d1b15153366e5e5e2a0d3bd4d9f740a310d95c46ad178d64849b1 · README.md=618f21c3cf47f42734680035726d3a6eebdc4be5f4d5d2ec0b6a924cac260b44`
 
 ## Landing page inventory
 
@@ -61,10 +61,9 @@ Source hashes: `site/index.html=bf0317cd80a9f904cca3ad0d3edaff6cde360fbe9d0bbebb
 | B | 1 | Pass |
 | Likely buttons | 2 | Pass |
 | How Lens handles captures | 4 | Pass |
-| Captures are discarded after local text recognition. | 7 | Pass |
-| Captures live only in memory long enough for local OCR. | 10 | Pass |
-| They are discarded immediately after recognition. | 6 | Pass |
-| Lens has no telemetry, cloud vision service, remote control, or hidden full-screen capture. | 13 | Pass |
+| Capture pixels are not returned after recognition. | 7 | Pass |
+| After recognition, Lens returns labels and directions, not capture pixels. | 10 | Pass |
+| You choose a window before capture. | 6 | Pass |
 | Read the plain-language privacy policy → | 5 | Pass |
 | Compare ways to find controls | 5 | Pass |
 | How Lens differs from a screen reader. | 7 | Pass |
@@ -101,7 +100,7 @@ Source hashes: `site/index.html=bf0317cd80a9f904cca3ad0d3edaff6cde360fbe9d0bbebb
 | ps1 \| iex | 2 | Pass |
 | Version 0. | 2 | Pass |
 | 1. | 1 | Pass |
-| 6 packages have no publisher signature. | 6 | Pass |
+| 7 packages have no publisher signature. | 6 | Pass |
 | On macOS, right-click the app and choose Open. | 8 | Pass |
 | Release source | 2 | Pass |
 | __RELEASE_COMMIT__ | 2 | Pass |
@@ -126,7 +125,7 @@ Source hashes: `site/index.html=bf0317cd80a9f904cca3ad0d3edaff6cde360fbe9d0bbebb
 | image provenance record | 3 | Pass |
 | Version 0. | 2 | Pass |
 | 1. | 1 | Pass |
-| 6 · Build repair-4 · Built by Param Factory | 7 | Pass |
+| 7 · Build polish-2 · Built by Param Factory | 7 | Pass |
 | Privacy | 1 | Pass |
 | Terms | 1 | Pass |
 | Source | 1 | Pass |
@@ -154,13 +153,13 @@ Source hashes: `site/index.html=bf0317cd80a9f904cca3ad0d3edaff6cde360fbe9d0bbebb
 | Keyboard-first label reading (`Alt+Shift+L`), text finding (`Alt+Shift+F`), and likely-button descriptions (`Alt+Shift+B`) | 17 | Pass |
 | Screen-reader announcements accompany every result | 5 | Pass |
 | Bundled sample project: find Save, Print, Cancel, and a status label before capturing a real window | 16 | Pass |
-| Free wayfinding and voice-speed preference controls; no account or purchase is required in this build | 15 | Pass |
+| Free label-finding and voice-speed controls; no account or purchase is required in this build | 14 | Pass |
 | Static download site, privacy and terms pages, and a versioned service worker | 12 | Pass |
 | Install | 1 | Pass |
 | Download the detected platform build from the latest release, or use: | 11 | Pass |
 | Version 0. | 2 | Pass |
 | 1. | 1 | Pass |
-| 6 packages have no publisher signature. | 6 | Pass |
+| 7 packages have no publisher signature. | 6 | Pass |
 | On macOS, right-click the installed app and choose **Open** the first time. | 12 | Pass |
 | The operating system asks for screen-capture permission when needed. | 9 | Pass |
 | Develop | 1 | Pass |
@@ -186,9 +185,8 @@ Source hashes: `site/index.html=bf0317cd80a9f904cca3ad0d3edaff6cde360fbe9d0bbebb
 | The service worker uses versioned caches and serves navigation requests from the network whenever online, so deployed fixes replace an older shell. | 22 | Pass |
 | Run the complete local suite with: | 6 | Pass |
 | Privacy | 1 | Pass |
-| Captured pixels exist in memory only during OCR. | 8 | Pass |
-| The app drops them when analysis returns. | 7 | Pass |
-| Voice speed is stored locally. | 5 | Pass |
+| After recognition, Lens returns labels and directions, not capture pixels. | 10 | Pass |
+| You choose a window before capture. | 6 | Pass |
 | Desktop demo mode uses a separate `demo:lens:speech-rate` key. | 10 | Pass |
 | **Start for real** clears that key and restores the regular preference. | 11 | Pass |
 | The website demo does not save your search or sample changes. | 11 | Pass |

@@ -148,7 +148,7 @@ test("@claim:no-account-required completes every sample tool with empty account 
   await expect(page.locator("body")).not.toContainText(/sign in|buy|checkout/i);
 });
 
-test("five scripted label-finding tasks complete by keyboard with spoken directions", async ({ page }) => {
+test("@claim:sample-keyboard-five-labels five scripted label-finding tasks complete by keyboard with spoken directions", async ({ page }) => {
   await page.goto("/?demo=1");
   const tasks = [
     ["Quarterly report", "top left"],
@@ -158,8 +158,10 @@ test("five scripted label-finding tasks complete by keyboard with spoken directi
     ["Cancel", "bottom right"],
   ];
   for (const [query, direction] of tasks) {
-    await page.locator("#find-input").fill(query);
-    await page.locator("#find-form").press("Enter");
+    await page.keyboard.press("Alt+Shift+F");
+    await page.keyboard.press("Control+A");
+    await page.keyboard.type(query);
+    await page.keyboard.press("Enter");
     await expect(page.locator("#find-result")).toContainText(direction);
   }
   await page.screenshot({ path: ".factory/evidence/polish-1-five-task-trial.png", fullPage: true });

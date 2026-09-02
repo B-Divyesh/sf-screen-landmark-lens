@@ -1,8 +1,11 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 
 const releaseCommit = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+const packageVersion = JSON.parse(readFileSync("package.json", "utf8")).version as string;
+const releaseTag = `v${packageVersion}`;
 
 test("landing page has a clear, working download path", async ({ page }) => {
   const errors: string[] = [];
@@ -12,11 +15,11 @@ test("landing page has a clear, working download path", async ({ page }) => {
   await expect(page.locator("main")).toHaveCount(1);
   await expect(page.locator("h1")).toHaveCount(1);
   await expect(page.locator("#platform-download")).toBeVisible();
-  await expect(page.locator("#platform-download")).toHaveAttribute("href", /releases\/download\/v0\.1\.8\//);
-  await expect(page.locator("#release-note")).toContainText("Version 0.1.8");
+  await expect(page.locator("#platform-download")).toHaveAttribute("href", new RegExp(`releases/download/${releaseTag}/`));
+  await expect(page.locator("#release-note")).toContainText(`Version ${packageVersion}`);
   await expect(page.locator('meta[name="release-commit"]')).toHaveAttribute("content", releaseCommit);
   await expect(page.locator("#release-source")).toContainText(releaseCommit);
-  expect(await page.request.get("/release.json").then((response) => response.json())).toEqual({ version: "0.1.8", tag: "v0.1.8", commit: releaseCommit });
+  expect(await page.request.get("/release.json").then((response) => response.json())).toEqual({ version: packageVersion, tag: releaseTag, commit: releaseCommit });
   await expect(page.locator("img[alt]")).toHaveCount(1);
   expect(errors).toEqual([]);
 });
@@ -36,20 +39,20 @@ test("@claim:release-metadata-cache release metadata is cached locally for one h
     requests += 1;
     return route.fulfill({
       contentType: "application/json",
-      body: JSON.stringify({ tag_name: "v0.1.8", target_commitish: releaseCommit, immutable: true, assets: [
-        { name: "Screen-Landmark-Lens_0.1.8_windows.msi", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.8/app.msi" },
-        { name: "Screen-Landmark-Lens_0.1.8_linux.AppImage", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.8/app.AppImage" },
-        { name: "Screen-Landmark-Lens_0.1.8_macos-arm64.dmg", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.8/arm.dmg" },
-        { name: "Screen-Landmark-Lens_0.1.8_macos-x64.dmg", browser_download_url: "https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/v0.1.8/x64.dmg" },
+      body: JSON.stringify({ tag_name: releaseTag, target_commitish: releaseCommit, immutable: true, assets: [
+        { name: `Screen-Landmark-Lens_${packageVersion}_windows.msi`, browser_download_url: `https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/${releaseTag}/app.msi` },
+        { name: `Screen-Landmark-Lens_${packageVersion}_linux.AppImage`, browser_download_url: `https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/${releaseTag}/app.AppImage` },
+        { name: `Screen-Landmark-Lens_${packageVersion}_macos-arm64.dmg`, browser_download_url: `https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/${releaseTag}/arm.dmg` },
+        { name: `Screen-Landmark-Lens_${packageVersion}_macos-x64.dmg`, browser_download_url: `https://github.com/B-Divyesh/sf-screen-landmark-lens/releases/download/${releaseTag}/x64.dmg` },
       ] }),
     });
   });
   const page = await context.newPage();
   try {
     await page.goto("http://127.0.0.1:4173/");
-    await expect(page.locator("#release-note")).toContainText("Version 0.1.8");
+    await expect(page.locator("#release-note")).toContainText(`Version ${packageVersion}`);
     await page.reload();
-    await expect(page.locator("#release-note")).toContainText("Version 0.1.8");
+    await expect(page.locator("#release-note")).toContainText(`Version ${packageVersion}`);
     expect(requests).toBe(1);
     const cached = await page.evaluate(() => JSON.parse(localStorage.getItem("lens:release-metadata:v2") || "null"));
     expect(cached.expiresAt - Date.now()).toBeGreaterThan(59 * 60 * 1000);
@@ -83,7 +86,7 @@ test("a fresh visit avoids GitHub HTTP 403 console errors with the published rel
     return route.fulfill({ status: 403, contentType: "application/json", body: '{"message":"rate limit"}' });
   });
   await page.goto("/");
-  await expect(page.locator("#release-note")).toContainText("Version 0.1.8");
+  await expect(page.locator("#release-note")).toContainText(`Version ${packageVersion}`);
   expect(githubRequests).toBe(0);
   expect(errors).toEqual([]);
 });
@@ -113,6 +116,26 @@ test("@claim:demo-privacy demo makes no third-party requests", async ({ page }) 
   expect(requests.every((url) => new URL(url).origin === "http://127.0.0.1:4173")).toBe(true);
 });
 
+test("@claim:demo-bundled-data website sample uses bundled data without a popup or native bridge", async ({ browser }) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const requests: string[] = [];
+  const extraPages: string[] = [];
+  page.on("request", (request) => requests.push(request.url()));
+  context.on("page", (candidate) => { if (candidate !== page) extraPages.push(candidate.url()); });
+  try {
+    await page.goto("/?demo=1");
+    await page.locator("#demo-find-input").fill("Save");
+    await page.locator("#demo-find-form").press("Enter");
+    await expect(page.locator("#demo-find-result")).toContainText("bottom right");
+    expect(await page.evaluate(() => "__TAURI__" in window)).toBe(false);
+    expect(extraPages).toEqual([]);
+    expect(requests.every((url) => new URL(url).origin === "http://127.0.0.1:4173")).toBe(true);
+  } finally {
+    await context.close();
+  }
+});
+
 test("@claim:website-privacy site sets no cookies and loads no third-party scripts", async ({ page }) => {
   await page.goto("/");
   expect(await page.evaluate(() => document.cookie)).toBe("");
@@ -137,7 +160,7 @@ test("@claim:site-updates navigations use a versioned, network-first worker", as
   await page.goto("/");
   const worker = await page.request.get("/sw.js");
   const source = await worker.text();
-  expect(source).toContain('const CACHE = "landmark-lens-v4"');
+  expect(source).toContain('const CACHE = "landmark-lens-v5"');
   expect(source).toContain('if (event.request.mode === "navigate")');
   expect(source.indexOf("fetch(event.request)")).toBeLessThan(source.indexOf("caches.match(event.request).then((cached) => cached || fetch"));
 });
@@ -186,18 +209,22 @@ test("all public routes keep the same product chrome", async ({ page }) => {
     await expect(page.locator("header")).toContainText("Landmark Lens");
     expect(await page.locator("header nav a").allTextContents()).toEqual(expectedNav);
     await expect(page.locator("footer")).toContainText("Landmark Lens");
-    await expect(page.locator("footer")).toContainText("Version 0.1.8 · Build polish-2 · Built by Param Factory");
+    await expect(page.locator("footer")).toContainText(`Version ${packageVersion} · Build polish-3 · Built by Param Factory`);
   }
 });
 
 test("privacy and terminology copy only make tested promises", async ({ page }) => {
   await page.goto("/");
+  await expect(page.locator(".lede")).toContainText("gives a direction such as “bottom right.”");
   await expect(page.locator("#privacy")).toContainText("Lens returns labels and directions, not capture pixels.");
   await expect(page.locator("#privacy")).toContainText("You choose a window before capture.");
-  await expect(page.locator("#privacy")).not.toContainText(/memory|telemetry|cloud vision|hidden full-screen/i);
+  await expect(page.locator("body")).toContainText("Text recognition. Runs on your device.");
+  await expect(page.locator("body")).toContainText("optical character recognition (OCR)");
+  await expect(page.locator("body")).not.toContainText(/memory|telemetry|cloud vision|hidden full-screen|OCR runs there|metadata is absent/i);
   await page.goto("/demo/");
   await expect(page.getByRole("heading", { name: "Find a visible label" })).toBeVisible();
-  await expect(page.locator("body")).not.toContainText(/Find a target|wayfinding/i);
+  await expect(page.locator(".demo-site-banner")).toContainText("This website sample uses bundled data only.");
+  await expect(page.locator("body")).not.toContainText(/Find a target|wayfinding|never opens another window|real desktop untouched/i);
 });
 
 test("route navigation and Back move focus to the destination heading", async ({ page }) => {
@@ -217,8 +244,8 @@ test("390px first screen includes the complete action and three facts", async ({
   await page.goto("/");
   const required = [
     page.getByRole("link", { name: "Try it with sample data" }).first(),
-    page.getByText("Captures stay on this device"),
-    page.getByText("Works offline after install"),
+    page.getByText("Results do not include capture pixels"),
+    page.getByText("Website sample works offline after one visit"),
     page.getByText("All tools in this build are free"),
   ];
   for (const locator of required) {

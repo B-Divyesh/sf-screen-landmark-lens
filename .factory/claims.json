@@ -14,6 +14,13 @@
     "sandbox": "Fresh browser records every request while using /demo/ and accepts only the product origin."
   },
   {
+    "id": "demo-bundled-data",
+    "claim": "The website sample uses bundled data only.",
+    "where": "/demo/ banner and lead",
+    "test": "npm run test:web -- --grep @claim:demo-bundled-data",
+    "sandbox": "Fresh browser opens the direct demo, finds Save, records no popup or native bridge, and accepts only product-origin requests."
+  },
+  {
     "id": "website-demo-storage",
     "claim": "The website demo does not save searches or sample changes.",
     "where": "README and /demo/ banner",
@@ -30,7 +37,7 @@
   {
     "id": "offline-demo",
     "claim": "The website sample demo reloads offline after its first visit.",
-    "where": "README and demo documentation",
+    "where": "Landing fact, privacy policy, README, and demo documentation",
     "test": "npm run test:web -- --grep @claim:offline-demo",
     "sandbox": "A dedicated browser context visits /demo/, waits for the worker, goes offline, reloads, and finds the demo heading."
   },
@@ -93,7 +100,7 @@
   {
     "id": "local-processing",
     "claim": "Bundled recognition models process a fixture locally without a service.",
-    "where": "Landing privacy statements, privacy policy, and README",
+    "where": "Landing privacy statements and comparison, privacy policy, and README",
     "test": "npm run test:shared -- -t @claim:local-processing",
     "sandbox": "Vitest executes the native Rust test that loads both bundled models and analyzes an in-memory fixture."
   },
@@ -107,7 +114,7 @@
   {
     "id": "capture-discarded",
     "claim": "Captured pixels are absent from the result returned after recognition.",
-    "where": "Landing privacy section, privacy policy, and README",
+    "where": "Landing fact and privacy section, privacy policy, and README",
     "test": "npm run test:shared -- -t @claim:capture-discarded",
     "sandbox": "Native result-boundary test serializes a fixture analysis and confirms labels are present while capture, pixels, and image bytes are absent."
   },
@@ -124,6 +131,13 @@
     "where": "Landing, privacy policy, terms, and README",
     "test": "npm run test:app-web -- --grep @claim:no-account-required",
     "sandbox": "Fresh sample with no account state exercises read, likely-button, find, and voice-speed tools."
+  },
+  {
+    "id": "sample-keyboard-five-labels",
+    "claim": "The bundled sample resolves five requested labels by keyboard.",
+    "where": "Brief success measure and pre-pilot record",
+    "test": "npm run test:app-web -- --grep @claim:sample-keyboard-five-labels",
+    "sandbox": "Fresh desktop sample searches Quarterly report, Status, Print, Save, and Cancel with keyboard submission and asserts each direction."
   },
   {
     "id": "release-metadata-cache",
@@ -148,14 +162,14 @@
   },
   {
     "id": "release-assets",
-    "claim": "Release 0.1.8 provides macOS, Windows, and Linux packages tied to this source commit.",
+    "claim": "Release 0.1.9 provides macOS, Windows, and Linux packages tied to this source commit.",
     "where": "Landing, README, and latest.json",
     "test": "VERIFY_PUBLISHED_RELEASE=1 npm run test:shared -- -t @claim:release-assets",
     "sandbox": "GitHub release API, published latest.json, SHA256SUMS, and the live release identity are compared with the clean checkout commit and required package names."
   },
   {
     "id": "package-signatures",
-    "claim": "Version 0.1.8 packages have no publisher signature.",
+    "claim": "Version 0.1.9 packages have no publisher signature.",
     "where": "Landing install note and README",
     "test": "VERIFY_PUBLISHED_RELEASE=1 npm run test:shared -- -t @claim:package-signatures",
     "sandbox": "The claim reads CI-produced Linux, macOS, and Windows signature reports attached to the published release."

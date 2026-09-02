@@ -4,7 +4,7 @@ Screen Landmark Lens is a desktop aid for blind and low-vision workers. It finds
 
 Pick one visible window. Lens reads its visible labels and gives a direction such as “bottom right.”
 
-Lens does not upload captures, control the pointer, click controls, or replace a screen reader. Optical character recognition (OCR) output is marked as uncertain.
+After recognition, Lens returns labels and directions, not capture pixels. Lens does not control the pointer, click controls, or replace a screen reader. Optical character recognition (OCR) output is marked as uncertain.
 
 Live site: <https://screen-landmark-lens.sociobot.in>
 
@@ -13,7 +13,7 @@ Live site: <https://screen-landmark-lens.sociobot.in>
 - Tauri 2 desktop app for macOS, Windows, and Linux
 - Release builds for macOS, Windows, and Linux
 - Window picker that limits each capture to one selection
-- Includes the text-recognition models for offline OCR
+- Includes built-in text-recognition models for local processing
 - Keyboard-first label reading (`Alt+Shift+L`), text finding (`Alt+Shift+F`), and likely-button descriptions (`Alt+Shift+B`)
 - Screen-reader announcements accompany every result
 - Bundled sample project: find Save, Print, Cancel, and a status label before capturing a real window
@@ -32,9 +32,7 @@ curl -fsSL https://screen-landmark-lens.sociobot.in/install.sh | sh
 irm https://screen-landmark-lens.sociobot.in/install.ps1 | iex
 ```
 
-Version 0.1.8 packages have no publisher signature. On macOS, right-click the installed app and choose **Open** the first time.
-
-The operating system asks for screen-capture permission when needed.
+Version 0.1.9 packages have no publisher signature. On macOS, right-click the installed app and choose **Open** the first time.
 
 ## Develop
 
@@ -59,7 +57,7 @@ The workflow confirms that the tag, packages, checksums, download links, and liv
 
 ## Demo and checks
 
-Open [`?demo=1`](https://screen-landmark-lens.sociobot.in/?demo=1) for an isolated, one-click sample. The desktop app also has **Load sample project** on its first screen.
+Open [`?demo=1`](https://screen-landmark-lens.sociobot.in/?demo=1) for an isolated, one-click sample. The website sample uses bundled data only. The desktop app also has **Load sample project** on its first screen.
 
 The sample data is bundled and uses no real capture. **Start for real** discards sample changes. See [.factory/demo.md](.factory/demo.md) and [.factory/claims.json](.factory/claims.json) for exact checks.
 
@@ -81,7 +79,7 @@ After recognition, Lens returns labels and directions, not capture pixels. You c
 
 Desktop demo mode uses a separate `demo:lens:speech-rate` key. **Start for real** clears that key and restores the regular preference.
 
-The website demo does not save your search or sample changes. Its service worker caches public pages for offline use. All shipped label-finding features are free and need no account or purchase.
+The website demo does not save your search or sample changes. It reloads offline after its first visit. All shipped label-finding features are free and need no account or purchase.
 
 The landing page asks `api.github.com` for current release metadata at most once per hour in a browser. If metadata is unavailable, its download buttons keep a direct link to the Release page. The website privacy policy describes this request.
 

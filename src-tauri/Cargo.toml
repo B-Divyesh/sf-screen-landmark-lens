@@ -1,6 +1,6 @@
 [package]
 name = "screen-landmark-lens"
-version = "0.1.8"
+version = "0.1.9"
 description = "Local visual landmark finder for inaccessible software"
 authors = ["Param Factory"]
 license = "MIT"

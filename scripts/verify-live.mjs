@@ -57,8 +57,8 @@ try {
   await mobile.goto(`${base}/`, { waitUntil: "networkidle" });
   const required = [
     mobile.getByRole("link", { name: "Try it with sample data" }).first(),
-    mobile.getByText("Captures stay on this device"),
-    mobile.getByText("Works offline after install"),
+    mobile.getByText("Results do not include capture pixels"),
+    mobile.getByText("Website sample works offline after one visit"),
     mobile.getByText("All tools in this build are free"),
   ];
   const bottoms = [];
@@ -80,10 +80,13 @@ try {
   const demoContext = await browser.newContext();
   const requests = [];
   const demo = await demoContext.newPage();
+  const extraPages = [];
   demo.on("request", (request) => requests.push(request.url()));
+  demoContext.on("page", (candidate) => { if (candidate !== demo) extraPages.push(candidate.url()); });
   await demo.goto(`${base}/?demo=1`, { waitUntil: "networkidle" });
   check(new URL(demo.url()).pathname === "/demo/", "?demo=1 did not enter the demo directly");
   check(await demo.getByText("Demo — sample data, nothing is saved.").isVisible(), "Demo banner is not visible");
+  check((await demo.locator(".demo-site-banner").textContent())?.includes("This website sample uses bundled data only."), "Demo safety copy is incorrect");
   await demo.locator("#demo-find-input").fill("Cancel");
   await demo.locator("#demo-find-form").press("Enter");
   check((await demo.locator("#demo-find-result").textContent())?.includes("bottom right"), "Demo did not find Cancel");
@@ -92,11 +95,12 @@ try {
   const stored = await demo.evaluate(() => ({ local: Object.keys(localStorage), session: Object.keys(sessionStorage).filter((key) => key !== "lens:focus-route-heading"), cookies: document.cookie }));
   check(stored.local.length === 0 && stored.session.length === 0 && stored.cookies === "", "Demo persisted user data");
   check(requests.every((url) => new URL(url).origin === new URL(base).origin), "Demo contacted a third party");
+  check(extraPages.length === 0 && !(await demo.evaluate(() => "__TAURI__" in window)), "Demo did not stay in the browser sandbox");
   await demo.getByRole("link", { name: "Start for real" }).click();
   await demo.waitForLoadState("networkidle");
   check(new URL(demo.url()).pathname === "/", "Start for real did not leave demo");
   check(await demo.locator("h1").evaluate((element) => element === document.activeElement), "Route did not focus the home heading");
-  report.demo = { directEntry: true, banner: true, reset: true, exit: true, storage: stored, onlySameOriginRequests: true, headingFocused: true };
+  report.demo = { directEntry: true, banner: true, reset: true, exit: true, storage: stored, onlySameOriginRequests: true, noPopupOrNativeBridge: true, headingFocused: true };
   await demoContext.close();
 
   const offlineContext = await browser.newContext();

@@ -1,31 +1,30 @@
-# Screen Landmark Lens — polish 2 handoff
+# Screen Landmark Lens — verification 6 handoff
 
-## Result
+## Result: PASS
 
-Repair candidate for the immutable `v0.1.8` release. The desktop app remains a Tauri 2 application with a static Vite download site.
+Independent QA accepted candidate `4e6dfa98465742596af99f794f3297cb7b0805f1`, deployed at <https://screen-landmark-lens.sociobot.in> as immutable release `v0.1.8`.
 
-## What changed
+## What was verified
 
-- Kept the one-click `?demo=1` sample isolated, with its persistent banner, reset, exit, offline shell, and separate desktop preference key.
-- Reframed the unrun participant study as planned field research. The shipped five-task run is explicitly automated pre-pilot coverage, not a human-product assertion.
-- Replaced capture-memory, telemetry, cloud, and hidden-capture promises with the verified boundary: recognition returns labels and directions, not capture pixels; the person chooses a window first.
-- Made header/footer wording and navigation consistent on home, demo, privacy, terms, and 404. Replaced `wayfinding` and `target` terminology with `label-finding` and `visible label`.
-- Added regressions for shared chrome, privacy-copy scope, and demo terminology. Updated release identity to the new immutable version.
+- All 28 declared claims passed from the demo entry point.
+- `npm test`, `npm run test:web` (50 checks), `npm run test:app-web` (28 checks), and `npm run build` passed.
+- Live desktop and 390 px mobile flows, keyboard focus, reduced motion, offline demo reload, privacy request logging, headers, 404, package checksum, and Axe were verified.
+- Mobile Lighthouse scored 100 performance and 100 accessibility (LCP 1.1 s; CLS 0.008).
 
-## Verification completed locally
+## How to verify
 
-- `npm ci`
-- `npm test` — 15 TypeScript/shared tests and 7 Rust tests passed after the documented Linux Tauri prerequisites.
-- `npm run build` — built `dist/app` and `dist/site`; site JavaScript is 4.46 KB gzip and CSS is 3.71 KB gzip.
-- `npm run test:web` — 50 site/browser checks passed.
-- `npm run test:app-web` — 28 desktop-browser checks passed.
-- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`
-- `CARGO_BUILD_JOBS=1 cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`
+Install the documented Tauri Linux system prerequisites from `.github/workflows/release.yml`, then run:
 
-## Release and deployment evidence
+```sh
+npm ci
+npm test
+npm run test:web
+npm run test:app-web
+npm run build
+```
 
-`v0.1.8` is the source-bound release candidate. After publication, run every command in `.factory/claims.json` from a fresh clone, including the two `VERIFY_PUBLISHED_RELEASE=1` commands, then deploy `dist/site` with `RELEASE_COMMIT` set to the tagged source commit. The live evidence is the home-page release meta tag and `/release.json`, which must name that same commit.
+For the full evidence and all exact claim commands, read `.factory/verification-6.md`.
 
-## Known gaps and next steps
+## Known verification boundary
 
-There is no claimed human participant result. The planned next research step is a consent-safe, five-task session with a blind or low-vision participant using the installed desktop app. No product functionality, security, accessibility, or release-identity finding is intentionally left unresolved.
+No separate remote/legacy desktop window exists in this container, so physical capture was not repeated. The bundled native model, selected-window, capture-discard, keyboard, speech, and recovery paths passed their shipped tests.

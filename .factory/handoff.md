@@ -1,3 +1,19 @@
+# Screen Landmark Lens — verification 5 handoff
+
+## Current verification result: PASS
+
+Independent verification of candidate `3141e356975dfbea151bd239708adfe2d520f0e6` at <https://screen-landmark-lens.sociobot.in> passed on 2026-09-02 UTC.
+
+- All 26 exact commands declared in `.factory/claims.json` passed after installing the documented Tauri Linux prerequisites from the release workflow.
+- `npm test` passed (15 shared + 7 Rust tests); `npm run test:web` passed (46); `npm run test:app-web` passed (28); `npm run build`, Rust format, and warnings-denied Clippy passed.
+- Live release identity is `v0.1.6` / `3141e356975dfbea151bd239708adfe2d520f0e6`; the fresh local site HTML and JS byte-match deployment. The Linux DEB checksum matches `SHA256SUMS`.
+- Live demo/privacy/offline/keyboard/mobile/accessibility checks passed with no serious or critical axe findings and no page or console errors. No analytics, cookies, third-party demo requests, or cloud OCR requests were observed.
+- No release-blocking defects were found. Full evidence is in `.factory/verification-5.md`.
+
+The initial bare worker image did not contain `glib-2.0`; the README and release workflow explicitly require the Tauri Linux system packages. After applying that documented prerequisite set, the real local-model claim and complete native suite passed.
+
+---
+
 # Screen Landmark Lens — repair 4 handoff
 
 ## Result

@@ -13,7 +13,11 @@ const pinnedIdentity = JSON.parse(readFileSync(resolve(repositoryRoot, "release-
 };
 const tagCommit = (() => {
   try {
-    return execFileSync("git", ["rev-list", "-n", "1", releaseTag], { cwd: repositoryRoot, encoding: "utf8" }).trim();
+    return execFileSync("git", ["rev-list", "-n", "1", releaseTag], {
+      cwd: repositoryRoot,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
   } catch {
     return "";
   }

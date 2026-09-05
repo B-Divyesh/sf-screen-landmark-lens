@@ -1,5 +1,6 @@
 demo-sample	PASS	npm run test:web -- --grep @claim:demo-sample
 demo-privacy	PASS	npm run test:web -- --grep @claim:demo-privacy
+demo-bundled-data	PASS	npm run test:web -- --grep @claim:demo-bundled-data
 website-demo-storage	PASS	npm run test:web -- --grep @claim:website-demo-storage
 website-privacy	PASS	npm run test:web -- --grep @claim:website-privacy
 offline-demo	PASS	npm run test:web -- --grep @claim:offline-demo
@@ -16,6 +17,7 @@ selected-window	PASS	npm run test:shared -- -t @claim:selected-window
 capture-discarded	PASS	npm run test:shared -- -t @claim:capture-discarded
 guidance-only	PASS	npm run test:app-web -- --grep @claim:guidance-only
 no-account-required	PASS	npm run test:app-web -- --grep @claim:no-account-required
+sample-keyboard-five-labels	PASS	npm run test:app-web -- --grep @claim:sample-keyboard-five-labels
 release-metadata-cache	PASS	npm run test:web -- --grep @claim:release-metadata-cache
 release-metadata-fallback	PASS	npm run test:web -- --grep @claim:release-metadata-fallback
 unknown-route-404	PASS	npm run test:web -- --grep @claim:unknown-route-404

@@ -142,10 +142,10 @@ describe("static deployment artifact", () => {
     expect(prompt.prompt).toMatch(/no text|Avoid: text/i);
   });
 
-  it("@claim:release-assets matches the published manifest, checksums, and exact source commit", async () => {
+  it("@claim:release-assets matches the published manifest, checksums, and immutable version-tag source", async () => {
     if (process.env.VERIFY_PUBLISHED_RELEASE !== "1") return;
     const expectedSource = process.env.EXPECTED_RELEASE_COMMIT
-      || execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
+      || execFileSync("git", ["rev-list", "-n", "1", `v${productVersion}`], { cwd: root, encoding: "utf8" }).trim();
     const releaseResponse = await fetch("https://api.github.com/repos/B-Divyesh/sf-screen-landmark-lens/releases/latest", { headers: { "User-Agent": "screen-landmark-lens-claim-test" } });
     expect(releaseResponse.ok).toBe(true);
     const release = await releaseResponse.json() as { tag_name: string; target_commitish: string; immutable: boolean; assets: Array<{ name: string; browser_download_url: string }> };

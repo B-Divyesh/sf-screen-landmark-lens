@@ -3,11 +3,11 @@ import AxeBuilder from "@axe-core/playwright";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
-const releaseCommit = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
 const packageVersion = JSON.parse(readFileSync("package.json", "utf8")).version as string;
 const releaseTag = `v${packageVersion}`;
+const releaseCommit = execFileSync("git", ["rev-list", "-n", "1", releaseTag], { encoding: "utf8" }).trim();
 
-test("landing page has a clear, working download path", async ({ page }) => {
+test("landing page keeps the download identity tied to its immutable release tag", async ({ page }) => {
   const errors: string[] = [];
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
   await page.goto("/");

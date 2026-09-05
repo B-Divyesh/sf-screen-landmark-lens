@@ -2,7 +2,7 @@
 
 Generated from the current landing page and README. Every visible landing string, heading, question, and control label is included. Code samples are excluded.
 
-Source hashes: `site/index.html=fe890ad49a3a74561b15dfa2f4a905347d7adff269231d786d2091bedfb11eb7 · README.md=e4ae9b62cfb73ed8b62b0c152d701024e02231c85dde0c4b9d54a00b0776bd7d`
+Source hashes: `site/index.html=fe890ad49a3a74561b15dfa2f4a905347d7adff269231d786d2091bedfb11eb7 · README.md=2603c87cbc97ef410f581ffbe3c5db08be11cb348b512c56b8d13a72ea200795`
 
 ## Landing page inventory
 
@@ -168,6 +168,7 @@ Source hashes: `site/index.html=fe890ad49a3a74561b15dfa2f4a905347d7adff269231d78
 | On Debian/Ubuntu, the release workflow lists the complete package set, including WebKitGTK, PipeWire, GBM, Clang, and `file`. | 18 | Pass |
 | In a container without FUSE, run `APPIMAGE_EXTRACT_AND_RUN=1 npm run tauri -- build --bundles appimage,deb`. | 18 | Pass |
 | The static deploy runs `npm run build:site` and publishes `dist/site`. | 12 | Pass |
+| It uses the version tag's commit for release identity. | 9 | Pass |
 | Native packages are built in GitHub Actions from a `v*` tag. | 11 | Pass |
 | The workflow confirms that the tag, packages, checksums, download links, and live site name one source commit. | 17 | Pass |
 | Published GitHub releases are immutable. | 5 | Pass |

@@ -51,7 +51,7 @@ npm run tauri build  # native bundle for the current host
 
 In a container without FUSE, run `APPIMAGE_EXTRACT_AND_RUN=1 npm run tauri -- build --bundles appimage,deb`.
 
-The static deploy runs `npm run build:site` and publishes `dist/site`. Native packages are built in GitHub Actions from a `v*` tag.
+The static deploy runs `npm run build:site` and publishes `dist/site`. It uses the version tag's commit for release identity. Native packages are built in GitHub Actions from a `v*` tag.
 
 The workflow confirms that the tag, packages, checksums, download links, and live site name one source commit. Published GitHub releases are immutable.
 

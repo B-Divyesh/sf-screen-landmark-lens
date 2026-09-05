@@ -6,7 +6,25 @@ import { execFileSync } from "node:child_process";
 const repositoryRoot = import.meta.dirname;
 const version = (JSON.parse(readFileSync(resolve(repositoryRoot, "package.json"), "utf8")) as { version: string }).version;
 const releaseTag = process.env.RELEASE_TAG || `v${version}`;
-const releaseCommit = process.env.RELEASE_COMMIT
+const tagCommit = (() => {
+  try {
+    return execFileSync("git", ["rev-list", "-n", "1", releaseTag], { cwd: repositoryRoot, encoding: "utf8" }).trim();
+  } catch {
+    return "";
+  }
+})();
+const configuredCommit = process.env.RELEASE_COMMIT;
+
+if (tagCommit && configuredCommit && configuredCommit !== tagCommit) {
+  throw new Error(`Release commit ${configuredCommit} does not match immutable tag ${releaseTag}`);
+}
+
+// Static deployments can be rebuilt after report-only commits. The package's
+// immutable version tag, rather than the checkout HEAD, remains the identity
+// of the downloadable desktop artifacts. Untagged local development keeps a
+// useful identity through the explicit value or current checkout.
+const releaseCommit = tagCommit
+  || configuredCommit
   || execFileSync("git", ["rev-parse", "HEAD"], { cwd: repositoryRoot, encoding: "utf8" }).trim();
 const releaseIdentity = JSON.stringify({ version, tag: releaseTag, commit: releaseCommit });
 

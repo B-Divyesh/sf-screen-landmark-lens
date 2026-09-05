@@ -1,1 +1,1 @@
-Find visible labels that screen readers miss in older and remote software.
+Find visible controls in unlabeled software.

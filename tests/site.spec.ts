@@ -1,11 +1,10 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
 const packageVersion = JSON.parse(readFileSync("package.json", "utf8")).version as string;
 const releaseTag = `v${packageVersion}`;
-const releaseCommit = execFileSync("git", ["rev-list", "-n", "1", releaseTag], { encoding: "utf8" }).trim();
+const releaseCommit = (JSON.parse(readFileSync("release-identity.json", "utf8")) as { commit: string }).commit;
 
 test("landing page keeps the download identity tied to its immutable release tag", async ({ page }) => {
   const errors: string[] = [];

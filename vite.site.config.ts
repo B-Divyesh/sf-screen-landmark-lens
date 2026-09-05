@@ -6,6 +6,11 @@ import { execFileSync } from "node:child_process";
 const repositoryRoot = import.meta.dirname;
 const version = (JSON.parse(readFileSync(resolve(repositoryRoot, "package.json"), "utf8")) as { version: string }).version;
 const releaseTag = process.env.RELEASE_TAG || `v${version}`;
+const pinnedIdentity = JSON.parse(readFileSync(resolve(repositoryRoot, "release-identity.json"), "utf8")) as {
+  version: string;
+  tag: string;
+  commit: string;
+};
 const tagCommit = (() => {
   try {
     return execFileSync("git", ["rev-list", "-n", "1", releaseTag], { cwd: repositoryRoot, encoding: "utf8" }).trim();
@@ -15,17 +20,20 @@ const tagCommit = (() => {
 })();
 const configuredCommit = process.env.RELEASE_COMMIT;
 
-if (tagCommit && configuredCommit && configuredCommit !== tagCommit) {
-  throw new Error(`Release commit ${configuredCommit} does not match immutable tag ${releaseTag}`);
+if (pinnedIdentity.version !== version || pinnedIdentity.tag !== releaseTag || !/^[a-f0-9]{40}$/.test(pinnedIdentity.commit)) {
+  throw new Error("release-identity.json does not match the package version and tag");
+}
+if (tagCommit && tagCommit !== pinnedIdentity.commit) {
+  throw new Error(`release-identity.json does not match immutable tag ${releaseTag}`);
+}
+if (configuredCommit && configuredCommit !== pinnedIdentity.commit) {
+  throw new Error(`Release commit ${configuredCommit} does not match release-identity.json`);
 }
 
-// Static deployments can be rebuilt after report-only commits. The package's
-// immutable version tag, rather than the checkout HEAD, remains the identity
-// of the downloadable desktop artifacts. Untagged local development keeps a
-// useful identity through the explicit value or current checkout.
-const releaseCommit = tagCommit
-  || configuredCommit
-  || execFileSync("git", ["rev-parse", "HEAD"], { cwd: repositoryRoot, encoding: "utf8" }).trim();
+// Static deployments can be rebuilt from shallow checkouts after report-only
+// commits. The committed record names the immutable desktop implementation,
+// so the landing page never falls back to the checkout HEAD.
+const releaseCommit = pinnedIdentity.commit;
 const releaseIdentity = JSON.stringify({ version, tag: releaseTag, commit: releaseCommit });
 
 if (releaseTag !== `v${version}`) throw new Error(`Release tag ${releaseTag} does not match package version ${version}`);

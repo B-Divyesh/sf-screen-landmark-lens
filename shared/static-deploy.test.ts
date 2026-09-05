@@ -17,6 +17,11 @@ const root = new URL("../", import.meta.url);
 const path = (relative: string) => new URL(relative, root);
 const config = JSON.parse(readFileSync(path("site/public/staticwebapp.config.json"), "utf8")) as StaticWebAppsConfig;
 const productVersion = (JSON.parse(readFileSync(path("package.json"), "utf8")) as { version: string }).version;
+const releaseIdentity = JSON.parse(readFileSync(path("release-identity.json"), "utf8")) as {
+  version: string;
+  tag: string;
+  commit: string;
+};
 
 const execFileAsync = promisify(execFile);
 const sharedCargoTarget = process.env.CARGO_TARGET_DIR || join(tmpdir(), "screen-landmark-lens-cargo-target");
@@ -123,6 +128,14 @@ describe("static deployment artifact", () => {
     })).toThrow();
   });
 
+  it("keeps the recorded implementation identity aligned with the package version", () => {
+    expect(releaseIdentity).toEqual({
+      version: productVersion,
+      tag: `v${productVersion}`,
+      commit: expect.stringMatching(/^[a-f0-9]{40}$/),
+    });
+  });
+
   it("@claim:dependency-licenses matches locked recognition dependencies to their notices", () => {
     const metadata = JSON.parse(execFileSync("cargo", ["metadata", "--manifest-path", "src-tauri/Cargo.toml", "--format-version", "1"], { cwd: root, encoding: "utf8", maxBuffer: 50 * 1024 * 1024 }));
     const notices = readFileSync(path("THIRD_PARTY_NOTICES.md"), "utf8");
@@ -145,7 +158,7 @@ describe("static deployment artifact", () => {
   it("@claim:release-assets matches the published manifest, checksums, and immutable version-tag source", async () => {
     if (process.env.VERIFY_PUBLISHED_RELEASE !== "1") return;
     const expectedSource = process.env.EXPECTED_RELEASE_COMMIT
-      || execFileSync("git", ["rev-list", "-n", "1", `v${productVersion}`], { cwd: root, encoding: "utf8" }).trim();
+      || releaseIdentity.commit;
     const releaseResponse = await fetch("https://api.github.com/repos/B-Divyesh/sf-screen-landmark-lens/releases/latest", { headers: { "User-Agent": "screen-landmark-lens-claim-test" } });
     expect(releaseResponse.ok).toBe(true);
     const release = await releaseResponse.json() as { tag_name: string; target_commitish: string; immutable: boolean; assets: Array<{ name: string; browser_download_url: string }> };

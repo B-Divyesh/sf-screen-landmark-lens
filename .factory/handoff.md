@@ -1,37 +1,42 @@
-# Screen Landmark Lens — verification 7 handoff
+# Find visible controls — review 4 handoff
 
-## Result: PASS
+## Result: FAIL
 
-Candidate `b23a4a567c1631eb895b4bbd332aea3d3a6ef50a` is live as immutable release `v0.1.11` at <https://screen-landmark-lens.sociobot.in>. Live release identity, release metadata, checksums, and a separately downloaded AppImage all match the candidate.
+Strict review 4 found one blocking defect and zero untested claims.
 
-## What was verified
+The immutable `v0.1.11` release and all packages identify implementation
+`70fc3237ee66760ec51c7726acd8f624a5570563`. The live page and `/release.json`
+instead identify evidence-only commit
+`b23a4a567c1631eb895b4bbd332aea3d3a6ef50a`. The declared `release-assets`
+claim therefore fails from either possible checkout.
 
-- All 29 declared claims passed with the documented Linux Tauri build dependencies installed.
-- `npm test`, `npm run test:web`, `npm run test:app-web`, `npm run build`, Tauri Linux production build, `cargo fmt`, and strict `cargo clippy` passed.
-- The live cold page, direct demo, offline reload, request log/privacy boundary, response headers/caching, desktop and 390 px layout, keyboard focus, reduced motion, internal links, 404, axe, and Lighthouse were independently checked.
-- The live demo uses only bundled data, leaves no demo storage/cookies, and sends only same-origin requests.
+Current documentation before this report was
+`95d562a9403055948336d04ccdba22be78133a8e`.
 
-## How to verify
+## What passed
 
-On Debian/Ubuntu first install the dependency set from `.github/workflows/release.yml`, then run:
+- 27 of 28 exact declared claim commands passed; none was left untested.
+- `npm test`, `npm run build`, `npm run test:web`, `npm run test:app-web`,
+  Rust format, and strict Clippy passed after documented prerequisites were
+  installed.
+- Fresh desktop and phone live checks passed first-read, demo, reset, exit,
+  storage isolation, privacy requests, offline reload, links, titles, legal
+  pages, designed 404, keyboard/focus, reduced motion, and axe checks.
+- Mobile Lighthouse scored 100 in performance, accessibility, best practices,
+  and SEO.
+- The published AppImage checksum matched. It launched with isolated consumer
+  storage, loaded the bundled sample, and found Cancel at bottom right.
+
+## Required next step
+
+Make the live release identity name the actual implementation source
+`70fc3237ee66760ec51c7726acd8f624a5570563`. A new binary build is not required
+for the later evidence-only commits. Then run:
 
 ```sh
 npm ci
-npm test
-npm run test:web
-npm run test:app-web
-npm run build
-APPIMAGE_EXTRACT_AND_RUN=1 npm run tauri -- build
+VERIFY_PUBLISHED_RELEASE=1 npm run test:shared -- -t @claim:release-assets
 ```
 
-For live verification:
-
-```sh
-EXPECTED_RELEASE_COMMIT=b23a4a567c1631eb895b4bbd332aea3d3a6ef50a npm run verify:live
-```
-
-## Known gaps
-
-The base disposable image lacks Tauri's system libraries; native commands fail there until the documented Linux prerequisites are installed. A physical third-party remote/legacy-app window cannot be rendered inside this container, so its capture was covered by the shipped controlled-window/native tests rather than a separate real window.
-
-See `.factory/verification-7.md` for full evidence and severity assessment.
+Run the other 27 manifest commands as well before declaring PASS. See
+[review-4.md](review-4.md) for the full evidence and earlier-finding map.

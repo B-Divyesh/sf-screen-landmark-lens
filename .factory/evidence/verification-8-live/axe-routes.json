@@ -1,0 +1,55 @@
+{
+  "checkedAt": "2026-09-05T23:07:27.056Z",
+  "results": [
+    {
+      "route": "/",
+      "colorScheme": "dark",
+      "violations": []
+    },
+    {
+      "route": "/demo/",
+      "colorScheme": "dark",
+      "violations": []
+    },
+    {
+      "route": "/privacy/",
+      "colorScheme": "dark",
+      "violations": []
+    },
+    {
+      "route": "/terms/",
+      "colorScheme": "dark",
+      "violations": []
+    },
+    {
+      "route": "/polish-retry-cold-404",
+      "colorScheme": "dark",
+      "violations": []
+    },
+    {
+      "route": "/",
+      "colorScheme": "light",
+      "violations": []
+    },
+    {
+      "route": "/demo/",
+      "colorScheme": "light",
+      "violations": []
+    },
+    {
+      "route": "/privacy/",
+      "colorScheme": "light",
+      "violations": []
+    },
+    {
+      "route": "/terms/",
+      "colorScheme": "light",
+      "violations": []
+    },
+    {
+      "route": "/polish-retry-cold-404",
+      "colorScheme": "light",
+      "violations": []
+    }
+  ]
+}

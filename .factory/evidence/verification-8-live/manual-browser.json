@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-09-05T23:09:05.863Z",
+  "reducedMotion": [
+    {
+      "viewport": "1440x900",
+      "errors": [],
+      "computed": {
+        "animationDuration": "0s",
+        "transitionDuration": "0s",
+        "scrollBehavior": "auto"
+      }
+    },
+    {
+      "viewport": "390x844",
+      "errors": [],
+      "computed": {
+        "animationDuration": "0s",
+        "transitionDuration": "0s",
+        "scrollBehavior": "auto"
+      }
+    }
+  ],
+  "reflow320": {
+    "clientWidth": 320,
+    "scrollWidth": 320,
+    "smallTargets": [],
+    "h1Count": 1
+  },
+  "keyboard": {
+    "first": {
+      "text": "Skip to main content",
+      "outline": "rgb(109, 71, 0) solid 3px",
+      "width": 220.203125,
+      "height": 45
+    },
+    "url": "https://screen-landmark-lens.sociobot.in/#main"
+  },
+  "invalidRecovery": {
+    "message": "“Missing label” was not found in the sample. Try Save, Print, Cancel, or Status.",
+    "bannerVisible": true
+  }
+}

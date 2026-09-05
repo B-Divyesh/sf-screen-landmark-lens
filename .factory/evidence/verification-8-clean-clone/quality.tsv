@@ -1,0 +1,6 @@
+npm-test	PASS	29s	npm test
+test-web	PASS	36s	npm run test:web
+test-app-web	PASS	15s	npm run test:app-web
+build	PASS	1s	npm run build
+cargo-fmt	PASS	0s	cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+cargo-clippy	PASS	261s	env CARGO_BUILD_JOBS=1 cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings

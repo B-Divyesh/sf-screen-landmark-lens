@@ -1,0 +1,9 @@
+Command: APPIMAGE_EXTRACT_AND_RUN=1 CARGO_BUILD_JOBS=1 npm run tauri -- build --bundles appimage,deb
+
+First run after the README-linked Tauri prerequisites and the release workflow's listed Linux packages:
+FAIL — xdg-open binary not found /usr/bin/xdg-open
+
+The Debian/Ubuntu package xdg-utils was then installed. It is not included in the release workflow's claimed complete package list.
+
+Second run:
+PASS — produced Screen Landmark Lens_0.1.11_amd64.AppImage and Screen Landmark Lens_0.1.11_amd64.deb.

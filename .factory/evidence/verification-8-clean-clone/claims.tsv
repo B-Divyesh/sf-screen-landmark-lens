@@ -1,0 +1,28 @@
+demo-sample	PASS	6s	npm run test:web -- --grep @claim:demo-sample
+demo-privacy	PASS	5s	npm run test:web -- --grep @claim:demo-privacy
+demo-bundled-data	PASS	6s	npm run test:web -- --grep @claim:demo-bundled-data
+website-demo-storage	PASS	6s	npm run test:web -- --grep @claim:website-demo-storage
+website-privacy	PASS	5s	npm run test:web -- --grep @claim:website-privacy
+offline-demo	PASS	6s	npm run test:web -- --grep @claim:offline-demo
+site-updates	PASS	5s	npm run test:web -- --grep @claim:site-updates
+desktop-sample	PASS	5s	npm run test:app-web -- --grep @claim:desktop-sample
+demo-mode-isolation	PASS	5s	npm run test:app-web -- --grep @claim:demo-mode-isolation
+free-voice-speed	PASS	5s	npm run test:app-web -- --grep @claim:free-voice-speed
+desktop-shortcuts	PASS	5s	npm run test:app-web -- --grep @claim:desktop-shortcuts
+screen-reader-announcements	PASS	5s	npm run test:app-web -- --grep @claim:screen-reader-announcements
+blank-find	PASS	5s	npm run test:app-web -- --grep @claim:blank-find
+ocr-uncertainty	PASS	5s	npm run test:app-web -- --grep @claim:ocr-uncertainty
+local-processing	PASS	30s	npm run test:shared -- -t @claim:local-processing
+selected-window	PASS	2s	npm run test:shared -- -t @claim:selected-window
+capture-discarded	PASS	2s	npm run test:shared -- -t @claim:capture-discarded
+guidance-only	PASS	5s	npm run test:app-web -- --grep @claim:guidance-only
+no-account-required	PASS	5s	npm run test:app-web -- --grep @claim:no-account-required
+sample-keyboard-five-labels	PASS	6s	npm run test:app-web -- --grep @claim:sample-keyboard-five-labels
+release-metadata-cache	PASS	5s	npm run test:web -- --grep @claim:release-metadata-cache
+release-metadata-fallback	PASS	6s	npm run test:web -- --grep @claim:release-metadata-fallback
+unknown-route-404	PASS	5s	npm run test:web -- --grep @claim:unknown-route-404
+release-assets	PASS	2s	VERIFY_PUBLISHED_RELEASE=1 npm run test:shared -- -t @claim:release-assets
+package-signatures	PASS	2s	VERIFY_PUBLISHED_RELEASE=1 npm run test:shared -- -t @claim:package-signatures
+checksum-installers	PASS	1s	VERIFY_PUBLISHED_RELEASE=1 npm run test:shared -- -t @claim:checksum-installers
+dependency-licenses	PASS	3s	npm run test:shared -- -t @claim:dependency-licenses
+image-provenance	PASS	1s	npm run test:shared -- -t @claim:image-provenance
